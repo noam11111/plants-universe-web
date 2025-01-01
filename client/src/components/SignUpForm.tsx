@@ -1,53 +1,70 @@
 import React from "react";
 import { SignUpData } from "../pages/SignUp";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type SignUpFormProps = {
   formData: SignUpData;
   onInputChange: (field: keyof SignUpData, value: string | File | null) => void;
 };
+const formSchema = z.object({
+  name: z.string().min(2),
+  username: z.string().min(6).max(10),
+  password: z.string().min(6).max(10),
+});
+
+type formData = z.infer<typeof formSchema>;
 
 const SignUpForm: React.FC<SignUpFormProps> = ({ formData, onInputChange }) => {
+  const {
+    handleSubmit,
+    formState: { errors },
+    register,
+  } = useForm<SignUpData>({ resolver: zodResolver(formSchema) });
+
+  const onSubmit = (data: formData) => {
+    // TODO
+    console.log(data);
+  };
   return (
-    <form>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div className="mb-3">
         <input
+          {...register("name")}
           type="text"
           className="form-control"
-          placeholder="First Name*"
-          value={formData.firstName}
-          onChange={(e) => onInputChange("firstName", e.target.value)}
-          required
+          placeholder="Name*"
+          value={formData.name}
+          onChange={(e) => onInputChange("name", e.target.value)}
         />
+        {errors.name && <p className="text-danger">{errors.name.message}</p>}
       </div>
       <div className="mb-3">
         <input
-          type="text"
-          className="form-control"
-          placeholder="Last Name*"
-          value={formData.lastName}
-          onChange={(e) => onInputChange("lastName", e.target.value)}
-          required
-        />
-      </div>
-      <div className="mb-3">
-        <input
+          {...register("username")}
           type="text"
           className="form-control"
           placeholder="Username*"
           value={formData.username}
           onChange={(e) => onInputChange("username", e.target.value)}
-          required
         />
+        {errors.username && (
+          <p className="text-danger">{errors.username.message}</p>
+        )}
       </div>
       <div className="mb-3">
         <input
+          {...register("password")}
           type="password"
           className="form-control"
           placeholder="Password*"
           value={formData.password}
           onChange={(e) => onInputChange("password", e.target.value)}
-          required
         />
+        {errors.password && (
+          <p className="text-danger">{errors.password.message}</p>
+        )}
       </div>
       <div
         className="mb-3 border p-3 text-center"
@@ -65,6 +82,7 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ formData, onInputChange }) => {
           }
         />
       </div>
+
       <button type="submit" className="btn btn-success w-100">
         Sign Up
       </button>
