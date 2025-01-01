@@ -38,7 +38,7 @@ const SignIn: React.FC = () => {
             style={{ width: "60px", height: "60px" }}
           />
           <h4 className="mt-2">PlantsUniverse</h4>
-          <p className="text-muted">Sign Up Page</p>
+          <p className="text-muted">Sign In Page</p>
         </div>
         <SignInForm formData={formData} onInputChange={handleInputChange} />
         <p className="text-center mt-1">
