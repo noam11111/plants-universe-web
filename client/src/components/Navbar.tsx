@@ -11,7 +11,8 @@ const NavbarComponent: React.FC = () => {
                     <img
                         src="/logo.png"
                         alt="PlantsUniverse Logo"
-                        className="logo"
+                        className="logo m-1"
+                        style={{ width: "30px", height: "30px" }}
                     />
                     PlantsUniverse
                 </Link>
