@@ -2,20 +2,24 @@ import React, { useState } from "react";
 import postsData from "../data/posts.json";
 import Post from "../components/Post";
 
-const Home: React.FC = () => {
+const Profile: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
+  const currentUsername = "PlantLover";
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const paginatedPosts = postsData.slice(
+  const filteredPosts = postsData.filter(
+    (post) => post.username === currentUsername
+  );
+  const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage
   );
 
-  const totalPages = Math.ceil(postsData.length / postsPerPage);
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
   return (
     <div className="container mt-4 d-flex flex-column justify-content-center">
@@ -68,4 +72,4 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home;
+export default Profile;

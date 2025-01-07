@@ -1,6 +1,8 @@
 import Home from "./pages/Home";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import AddPost from "./pages/AddPost";
+import Profile from "./pages/Profile";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useUserContext } from "./context/UserContext";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -29,8 +31,8 @@ function App() {
             ) : (
               <>
                 <Route path="/" element={<Home />} />
-                <Route path="/add-post" element={<div>Add Post Page</div>} />
-                <Route path="/profile" element={<div>Profile Page</div>} />
+                <Route path="/add-post" element={<AddPost></AddPost>} />
+                <Route path="/profile" element={<Profile></Profile>} />
               </>
             )}
           </Routes>
