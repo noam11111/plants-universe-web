@@ -1,8 +1,10 @@
-import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SignInData } from "../pages/SignIn";
+import { login } from "../services/auth";
+import { useUserContext } from "../context/UserContext";
+import { useState } from "react";
 
 type SignInFormProps = {
   formData: SignInData;
@@ -15,16 +17,25 @@ const formSchema = z.object({
 
 type formData = z.infer<typeof formSchema>;
 
-const SignInForm: React.FC<SignInFormProps> = ({ formData, onInputChange }) => {
+const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
+  const { setUser } = useUserContext() ?? {};
+
   const {
     handleSubmit,
     formState: { errors },
     register,
   } = useForm<SignInData>({ resolver: zodResolver(formSchema) });
 
-  const onSubmit = (data: formData) => {
-    // TODO
-    console.log(data);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const onSubmit = async ({ username, password }: formData) => {
+    try {
+      const user = await login(username, password);
+      setUser?.(user);
+    } catch (err) {
+      console.error("error login user", err);
+      setServerError("Failed to login user, please try again.");
+    }
   };
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -54,6 +65,7 @@ const SignInForm: React.FC<SignInFormProps> = ({ formData, onInputChange }) => {
           <p className="text-danger">{errors.password.message}</p>
         )}
       </div>
+      {serverError && <p className="text-danger">{serverError}</p>}
       <button type="submit" className="btn btn-success w-100">
         Sign In
       </button>

@@ -10,6 +10,7 @@ export type SignUpData = {
 };
 
 const SignUp: React.FC = () => {
+  //TODO: add email field
   const [formData, setFormData] = useState<SignUpData>({
     name: "",
     username: "",
@@ -49,7 +50,7 @@ const SignUp: React.FC = () => {
         <SocialSignUp />
         <p className="text-center mt-1">
           Already have an account?{" "}
-          <a href="/signin" className="text-success">
+          <a href="/" className="text-success">
             Sign In
           </a>
         </p>
