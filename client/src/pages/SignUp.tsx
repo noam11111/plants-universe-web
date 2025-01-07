@@ -28,10 +28,7 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{ backgroundColor: "#eaf7e4" }}
-    >
+    <div className="d-flex justify-content-center align-items-center vh-100">
       <div
         className="card p-4"
         style={{ width: "400px", borderRadius: "12px" }}

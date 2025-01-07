@@ -3,6 +3,7 @@ import SignUp from "./pages/SignUp";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SignIn from "./pages/SignIn";
 import Home from "./pages/Home";
+import AddPost from "./pages/AddPost";
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/" element={<Home />} />
-          <Route path="/add-post" element={<div>Add Post Page</div>} />
+          <Route path="/addPost" element={<AddPost></AddPost>} />
           <Route path="/profile" element={<div>Profile Page</div>} />
         </Routes>
       </Router>
