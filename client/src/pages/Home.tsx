@@ -27,12 +27,7 @@ const Home: React.FC = () => {
         {paginatedPosts.length > 0 ? (
           paginatedPosts.map((post, index) => (
             <div className="col-12 mb-3" key={index}>
-              <Post
-                username={post.username}
-                userPhoto={post.userPhoto}
-                postPhoto={post.postPhoto}
-                description={post.description}
-              />
+              <Post post={post} />
             </div>
           ))
         ) : (

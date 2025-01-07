@@ -25,7 +25,6 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
 
   return (
     <div className="form-group">
-      <label htmlFor="photo">Upload Photo</label>
       <div
         {...getRootProps({
           className:
@@ -39,7 +38,7 @@ const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
           <p>{selectedFile.name}</p>
         ) : (
           <div className="text-center">
-            <FiUpload size={40} color="#007bff" />
+            <FiUpload size={20} color="#007bff" />
             <p>Drag and drop an image, or click to select one</p>
           </div>
         )}
