@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import postsData from "../data/posts.json";
 import Post from "../components/Post";
 
@@ -6,69 +6,90 @@ const Profile: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
   const currentUsername = "PlantLover";
+  const [posts, setPosts] = useState<Post[]>([]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const filteredPosts = postsData.filter(
+  const filteredPosts: Post[] = postsData.filter(
     (post) => post.username === currentUsername
   );
-  const paginatedPosts = filteredPosts.slice(
-    (currentPage - 1) * postsPerPage,
-    currentPage * postsPerPage
-  );
+  useEffect(() => {
+    setPosts(
+      filteredPosts.slice(
+        (currentPage - 1) * postsPerPage,
+        currentPage * postsPerPage
+      )
+    );
+  }, []);
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
+  const editPost = (post: Post) => {
+    console.log("edittttt");
+    setPosts(
+      posts.map((currPost) =>
+        currPost.id === post.id ? { editMode: true, ...post } : post
+      )
+    );
+  };
+  const deletePost = (post: Post) => {
+    // TODO post delete
+  };
   return (
-    <div className="container mt-4 d-flex flex-column justify-content-center">
-      {/* Posts Section */}
-      <div
-        className="row flex-grow-1"
-        style={{ minHeight: "300px", height: "600px" }}
-      >
-        {paginatedPosts.length > 0 ? (
-          paginatedPosts.map((post, index) => (
-            <div className="col-12 mb-3" key={index}>
-              <Post
-                username={post.username}
-                userPhoto={post.userPhoto}
-                postPhoto={post.postPhoto}
-                description={post.description}
-              />
-            </div>
-          ))
-        ) : (
-          <div className="col-12 d-flex justify-content-center align-items-center">
-            <p className="text-center">No posts available.</p>
+    <>
+      {
+        <div className="container mt-4 d-flex flex-column justify-content-center">
+          {/* Posts Section */}
+          <div
+            className="row flex-grow-1"
+            style={{ minHeight: "300px", height: "600px" }}
+          >
+            {posts.length > 0 ? (
+              posts.map((post, index) => (
+                <div className="col-12 mb-3" key={index}>
+                  <Post
+                    deletePost={() => deletePost(post)}
+                    editPost={() => editPost(post)}
+                    onEditSave={(updatedPost: Post) => console.log(updatedPost)}
+                    key={post.id}
+                    post={post}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-12 d-flex justify-content-center align-items-center">
+                <p className="text-center">No posts available.</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Pagination Section */}
-      <div className="row">
-        <div className="col-12 text-center">
-          {totalPages > 0 ? (
-            [...Array(totalPages).keys()].map((num) => (
-              <button
-                key={num}
-                className={`btn btn-${
-                  num + 1 === currentPage ? "success" : "outline-success"
-                } mx-1`}
-                onClick={() => handlePageChange(num + 1)}
-              >
-                {num + 1}
-              </button>
-            ))
-          ) : (
-            <button className="btn btn-outline-secondary" disabled>
-              No Pages
-            </button>
-          )}
+          {/* Pagination Section */}
+          <div className="row">
+            <div className="col-12 text-center">
+              {totalPages > 0 ? (
+                [...Array(totalPages).keys()].map((num) => (
+                  <button
+                    key={num}
+                    className={`btn btn-${
+                      num + 1 === currentPage ? "success" : "outline-success"
+                    } mx-1`}
+                    onClick={() => handlePageChange(num + 1)}
+                  >
+                    {num + 1}
+                  </button>
+                ))
+              ) : (
+                <button className="btn btn-outline-secondary" disabled>
+                  No Pages
+                </button>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      }
+    </>
   );
 };
 

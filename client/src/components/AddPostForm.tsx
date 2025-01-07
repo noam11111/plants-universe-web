@@ -60,7 +60,7 @@ const PostForm: React.FC<PostFormProps> = ({ formData, onInputChange }) => {
             setValue("photo", file); // Update react-hook-form state
             onInputChange("photo", file);
           }}
-          selectedFile={formData.photo ?? null}
+          selectedFile={formData.postPhoto ?? null}
         />
         {errors.photo && <p className="text-danger">Photo is required</p>}
       </div>

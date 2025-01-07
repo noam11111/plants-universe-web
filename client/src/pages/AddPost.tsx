@@ -3,13 +3,13 @@ import PostForm from "../components/AddPostForm";
 
 export interface PostData {
   description: string;
-  photo: File | null | undefined;
+  postPhoto: File | null;
 }
 
 const AddPost: React.FC = () => {
   const [formData, setFormData] = useState<PostData>({
     description: "",
-    photo: null,
+    postPhoto: null,
   });
 
   const handleInputChange = (
