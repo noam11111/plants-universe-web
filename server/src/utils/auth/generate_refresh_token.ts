@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { JwtInfo } from "./generate_access_token";
+import { JwtInfo } from "./auth";
 
 export const generateRefreshToken = (
   user: JwtInfo,

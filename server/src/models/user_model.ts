@@ -14,6 +14,7 @@ const usersSchema = new mongoose.Schema<User>({
   email: {
     type: String,
     required: true,
+    unique: true,
   },
   photo: { type: String },
   tokens: {

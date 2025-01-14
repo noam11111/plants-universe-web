@@ -1,7 +1,7 @@
-import axios, { AxiosError } from "axios";
 import moment from "moment";
-import { Token } from "../interfaces/auth";
 import { User } from "../interfaces/user";
+import axios, { AxiosError } from "axios";
+import { Token } from "../interfaces/auth";
 import { SignUpData } from "../pages/SignUp";
 
 const AUTH_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/auth`;
@@ -85,7 +85,7 @@ const initAuthFromRefreshToken = async (refreshToken: string) => {
 
 export const authLogout = async () => {
   try {
-    const {token} = JSON.parse(
+    const { token } = JSON.parse(
       localStorage.getItem(LocalStorageNames.RefreshToken) ?? ""
     ) as Token;
 
@@ -135,6 +135,35 @@ export const login = async (username: string, password: string) => {
     throw err;
   }
 };
+
+export const googleLogin = async (credential?: string) => {
+  try {
+    const { accessToken, refreshToken, user } = (
+      await axios.post<{ accessToken: Token; refreshToken: Token; user: User }>(
+        `${AUTH_BASE_URL}/google-login`,
+        {
+          credential,
+        }
+      )
+    ).data;
+
+    localStorage.setItem(
+      LocalStorageNames.AccessToken,
+      JSON.stringify({ accessToken })
+    );
+
+    localStorage.setItem(
+      LocalStorageNames.RefreshToken,
+      JSON.stringify(refreshToken)
+    );
+
+    return user;
+  } catch (err) {
+    console.log(err, "Failed to google login");
+    throw err;
+  }
+};
+
 export const signup = async (userData: SignUpData) => {
   try {
     const formData = new FormData();
@@ -175,7 +204,7 @@ export const signup = async (userData: SignUpData) => {
       err.response?.status === 400 &&
       err.response.data.userExist
     ) {
-      throw new Error("Username already exists, please login.");
+      throw new Error(err.message);
     } else {
       throw new Error("Failed to signup user, please try again.");
     }

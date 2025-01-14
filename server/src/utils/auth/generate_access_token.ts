@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User } from "../../dtos/user";
+import { JwtInfo } from "./auth";
 
 export const generateAccessToken = (
   user: JwtInfo,
@@ -7,15 +7,4 @@ export const generateAccessToken = (
   expiryTime: string
 ) => {
   return jwt.sign(user, accessToken, { expiresIn: expiryTime });
-};
-
-export type JwtInfo = Pick<User, "_id" | "username">;
-
-export const convertUserToJwtInfo = (user: User) => {
-  return {
-    _id: user._id.toString(),
-    username: user.username,
-    email: user.email,
-    photo: user.photo,
-  };
 };
