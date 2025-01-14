@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PostComponent from "../components/Post";
 import { usePostsContext } from "../context/PostsContext";
 
-const Home: React.FC = () => {
+const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
   const { posts } = usePostsContext();

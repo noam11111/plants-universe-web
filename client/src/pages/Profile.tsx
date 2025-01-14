@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PostComponent from "../components/Post";
 import UserProfile from "../components/UserProfile";
 import { Post } from "../interfaces/post";
 import { usePostsContext } from "../context/PostsContext";
 
-const Profile: React.FC = () => {
+const Profile = () => {
   const { posts, setPosts } = usePostsContext();
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;

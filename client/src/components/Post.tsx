@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa"; // Importing the edit and delete icons
+import { useState } from "react";
 import DropzoneComponent from "./Dropzone";
 import { Post } from "../interfaces/post";
 import PostActions from "./PostActions";
@@ -7,6 +6,7 @@ import { createComment } from "../services/comment";
 import { useUserContext } from "../context/UserContext";
 import { deletePostById, updatePost } from "../services/posts";
 import { usePostsContext } from "../context/PostsContext";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 interface PostProps {
   post: Post;
@@ -14,11 +14,11 @@ interface PostProps {
   enablePostActions?: boolean;
 }
 
-const PostComponent: React.FC<PostProps> = ({
+const PostComponent = ({
   post,
   enableChanges,
   enablePostActions,
-}) => {
+}: PostProps) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
   const [description, setDescription] = useState(post.content);
   const [postPhoto, setPostPhoto] = useState(post.photoSrc);

@@ -6,13 +6,9 @@ import { User } from "../dtos/user";
 import { Request, Response } from "express";
 import { uploadFile } from "../utils/multer";
 import { UserModel } from "../models/user_model";
+import { OAuth2Client } from "google-auth-library";
 import { createNewUser } from "../services/user_service";
-import { generateRefreshToken } from "../utils/auth/generate_refresh_token";
-
-import {
-  convertUserToJwtInfo,
-  generateAccessToken,
-} from "../utils/auth/generate_access_token";
+import { generateAndSaveTokens } from "../utils/auth/auth";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -21,12 +17,31 @@ export const register = async (req: Request, res: Response) => {
     const user: User = JSON.parse(req.body.user);
     user.photo = req.file.filename;
 
-    const userExistsCheck = await UserModel.findOne({
+    const usernameExistsCheck = await UserModel.findOne({
       username: user.username,
     });
 
-    if (userExistsCheck) {
-      res.status(400).send({ userExist: true, message: "User already exists" });
+    if (usernameExistsCheck) {
+      res
+        .status(400)
+        .send({
+          userExist: true,
+          message: "User already exists, please login",
+        });
+      return;
+    }
+
+    const emailExistsCheck = await UserModel.findOne({
+      email: user.email,
+    });
+
+    if (emailExistsCheck) {
+      res
+        .status(400)
+        .send({
+          userExist: true,
+          message: "email already exists, please login",
+        });
       return;
     }
 
@@ -50,29 +65,15 @@ export const login = async (req: Request, res: Response) => {
     const passwordsMatch = await bcrypt.compare(password, user.password);
     if (!passwordsMatch) throw Error("Invalid Credentials");
 
-    const accessToken = generateAccessToken(
-      convertUserToJwtInfo(user),
-      process.env.ACCESS_TOKEN_SECRET,
-      process.env.ACCESS_TOKEN_EXPIRATION
-    );
-    const refreshToken = generateRefreshToken(
-      convertUserToJwtInfo(user),
-      process.env.REFRESH_TOKEN_SECRET,
-      process.env.REFRESH_TOKEN_EXPIRATION
-    );
+    const { accessToken, refreshToken, userTokens } =
+      await generateAndSaveTokens(user);
 
-    user.tokens = user.tokens ? [...user.tokens, refreshToken] : [refreshToken];
+    user.tokens = userTokens;
     await user.save();
 
     res.status(200).send({
-      accessToken: {
-        token: accessToken,
-        expireDate: moment().add(ms(process.env.ACCESS_TOKEN_EXPIRATION)),
-      },
-      refreshToken: {
-        token: refreshToken,
-        expireDate: moment().add(ms(process.env.REFRESH_TOKEN_EXPIRATION)),
-      },
+      accessToken,
+      refreshToken,
       user,
     });
   } catch (err) {
@@ -129,32 +130,57 @@ export const refreshToken = async (req: Request, res: Response) => {
           return res.status(403).send("Unauthorized");
         }
 
-        const accessToken = generateAccessToken(
-          convertUserToJwtInfo(user),
-          process.env.ACCESS_TOKEN_SECRET,
-          process.env.ACCESS_TOKEN_EXPIRATION
-        );
-        const refreshToken = generateRefreshToken(
-          convertUserToJwtInfo(user),
-          process.env.REFRESH_TOKEN_SECRET,
-          process.env.REFRESH_TOKEN_EXPIRATION
-        );
+        const { accessToken, refreshToken, userTokens } =
+          await generateAndSaveTokens(user);
 
-        user.tokens[user.tokens.indexOf(token)] = refreshToken;
+        user.tokens = userTokens;
         await user.save();
+
         res.status(200).send({
-          accessToken: {
-            token: accessToken,
-            expireDate: moment().add(ms(process.env.ACCESS_TOKEN_EXPIRATION)),
-          },
-          refreshToken: {
-            token: refreshToken,
-            expireDate: moment().add(ms(process.env.REFRESH_TOKEN_EXPIRATION)),
-          },
+          accessToken,
+          refreshToken,
+          user,
         });
       } catch (err) {
         res.status(403).send(err.message);
       }
     }
   );
+};
+
+export const googleLogin = async (req: Request, res: Response) => {
+  const client = new OAuth2Client();
+
+  const credential = req.body.credential;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const email = payload?.email;
+    let user = await UserModel.findOne({ email: email });
+
+    if (user == null) {
+      user = await UserModel.create({
+        email: email,
+        imgUrl: payload?.picture,
+        password: "google-signin",
+      });
+    }
+
+    const { accessToken, refreshToken, userTokens } =
+      await generateAndSaveTokens(user);
+
+    user.tokens = userTokens;
+    await user.save();
+
+    res.status(200).send({
+      accessToken,
+      refreshToken,
+      user,
+    });
+  } catch (err) {
+    return res.status(500).send("failed to sign in with google");
+  }
 };
