@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { FaHeart } from "react-icons/fa";
-import { User } from "../interfaces/user";
 import { PostComment } from "../interfaces/comment";
-import { useUserContext } from "../context/UserContext";
 
 interface PostActionsProps {
   likesNumber: number;

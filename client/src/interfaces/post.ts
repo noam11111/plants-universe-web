@@ -6,7 +6,6 @@ export interface Post {
   owner: User;
   photoSrc: string;
   content: string;
-  editMode?: boolean; // Flag to indicate if the post is in edit mode
   likedBy: User[];
   comments: PostComment[];
 }
