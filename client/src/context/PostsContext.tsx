@@ -22,6 +22,8 @@ export const PostsContextProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       try {
         const posts = await getPosts();
+        console.log(posts);
+
         if (posts) {
           setPosts(posts);
         }

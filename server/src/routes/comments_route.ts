@@ -2,7 +2,7 @@ import * as express from "express";
 import {
   getCommentById,
   getAllComments,
-  getCommentByPostId,
+  // getCommentByPostId,
   createComment,
   updateComment,
   deleteCommentById,
@@ -14,7 +14,7 @@ router.get("/", getAllComments);
 
 router.get("/:commentId", getCommentById);
 
-router.get("/post/:postId", getCommentByPostId);
+// router.get("/post/:postId", getCommentByPostId);
 
 router.post("/", createComment);
 

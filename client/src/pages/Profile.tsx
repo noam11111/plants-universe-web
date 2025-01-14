@@ -33,18 +33,6 @@ const Profile: React.FC = () => {
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
-  const editPost = (post: Post) => {
-    console.log("edittttt");
-    setPosts(
-      posts.map((currPost) =>
-        currPost.id === post.id ? { editMode: true, ...post } : post
-      )
-    );
-  };
-  const deletePost = (post: Post) => {
-    // TODO post delete
-  };
-
   const handleSaveProfile = (
     updatedUsername: string,
     updatedProfilePhoto: string | null
@@ -69,9 +57,8 @@ const Profile: React.FC = () => {
                 posts.map((post, index) => (
                   <div className="col-12 mb-3" key={index}>
                     <PostComponent
-                      deletePost={() => deletePost(post)}
-                      onEditSave={() => editPost(post)}
-                      key={post.id}
+                      enableChanges={true}
+                      key={post._id}
                       post={post}
                     />
                   </div>

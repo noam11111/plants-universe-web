@@ -6,7 +6,6 @@ import Profile from "./pages/Profile";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useUserContext } from "./context/UserContext";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { PostsContextProvider } from "./context/PostsContext";
 
 function App() {
   const { user, loadingUser } = useUserContext() ?? {};
@@ -22,24 +21,22 @@ function App() {
           style={{ width: "15rem", height: "15rem" }}
         />
       ) : (
-        <PostsContextProvider>
-          <Router>
-            <Routes>
-              {!user ? (
-                <>
-                  <Route path="/" element={<SignIn />} />
-                  <Route path="/signup" element={<SignUp />} />
-                </>
-              ) : (
-                <>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/add-post" element={<AddPost></AddPost>} />
-                  <Route path="/profile" element={<Profile></Profile>} />
-                </>
-              )}
-            </Routes>
-          </Router>
-        </PostsContextProvider>
+        <Router>
+          <Routes>
+            {!user ? (
+              <>
+                <Route path="/" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
+              </>
+            ) : (
+              <>
+                <Route path="/" element={<Home />} />
+                <Route path="/add-post" element={<AddPost></AddPost>} />
+                <Route path="/profile" element={<Profile></Profile>} />
+              </>
+            )}
+          </Routes>
+        </Router>
       )}
     </div>
   );

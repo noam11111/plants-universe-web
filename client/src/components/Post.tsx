@@ -2,35 +2,86 @@ import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa"; // Importing the edit and delete icons
 import DropzoneComponent from "./Dropzone";
 import { Post } from "../interfaces/post";
+import PostActions from "./PostActions";
+import { createComment } from "../services/comment";
+import { useUserContext } from "../context/UserContext";
+import { deletePostById, updatePost } from "../services/posts";
+import { usePostsContext } from "../context/PostsContext";
 
 interface PostProps {
   post: Post;
-  deletePost?: () => void; // Optional function for deleting the post
-  onEditSave?: (updatedPost: Post) => void; // Function to save edited post
-  onLikeToggle?: (postId: string) => void; // Function to handle like toggle
-  onCommentAdd?: (postId: string, comment: string) => void; // Function to handle adding comments
+  enableChanges?: boolean;
+  enablePostActions?: boolean;
 }
 
 const PostComponent: React.FC<PostProps> = ({
   post,
-  deletePost,
-  onEditSave,
-  onLikeToggle,
-  onCommentAdd,
+  enableChanges,
+  enablePostActions,
 }) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
   const [description, setDescription] = useState(post.content);
   const [postPhoto, setPostPhoto] = useState(post.photoSrc);
+  const { user } = useUserContext() ?? {};
+  const { setPosts, posts } = usePostsContext();
+
+  const isLikedByCurrUser = (): boolean => {
+    return post.likedBy.find((currUser) => currUser?._id === user?._id)
+      ? true
+      : false;
+  };
+  const onEditSave = () => {
+    // setPosts(
+    //   posts.map((currPost) =>
+    //     currPost._id === post._id ? { editMode: true, ...post } : post
+    //   )
+    // );
+
+    updatePost({ ...post, content: description });
+  };
+  const deletePost = () => {
+    deletePostById(post._id);
+  };
+  const onLikeToggle = () => {
+    const prevPosts = posts;
+    try {
+      if (user) {
+        const newLikedBy = post.likedBy.find(
+          (currUser) => currUser._id === user?._id
+        )
+          ? [user, ...post.likedBy]
+          : [...post.likedBy.filter((currUser) => currUser._id === user?._id)];
+        const newPost: Post = {
+          ...post,
+          likedBy: newLikedBy,
+        };
+        updatePostInState(newPost);
+        updatePost(newPost);
+      }
+    } catch (error) {
+      console.error(error);
+      setPosts(prevPosts);
+    }
+  };
+
+  const onCommentAdd = (commentContent: string) => {
+    if (user) {
+      const newPost: Post = {
+        ...post,
+        comments: [{ content: commentContent, user }, ...post.comments],
+      };
+      updatePostInState(newPost);
+      createComment(post._id, { content: commentContent, user: user });
+    }
+  };
+
+  const updatePostInState = (newPost: Post) => {
+    setPosts(posts.map((post) => (post._id === newPost._id ? newPost : post)));
+  };
 
   const handleSave = () => {
-    if (onEditSave) {
-      onEditSave({
-        ...post,
-        content: description,
-        photoSrc: postPhoto,
-        editMode: false,
-      });
-    }
+    onEditSave();
+
     setIsEditing(false);
   };
 
@@ -44,7 +95,7 @@ const PostComponent: React.FC<PostProps> = ({
         overflow: "hidden",
       }}
     >
-      {(onEditSave || deletePost) && (
+      {enableChanges && (
         <div
           className="edit-buttons"
           style={{
@@ -55,7 +106,7 @@ const PostComponent: React.FC<PostProps> = ({
             gap: "10px",
           }}
         >
-          {onEditSave && !isEditing && (
+          {enableChanges && !isEditing && (
             <button
               className="btn btn-light"
               style={{ border: "none", background: "transparent" }}
@@ -114,6 +165,17 @@ const PostComponent: React.FC<PostProps> = ({
             />
             <p>{description}</p>
           </>
+        )}
+
+        {enablePostActions && (
+          <PostActions
+            comments={post.comments}
+            likesNumber={post.likedBy.length}
+            likedByUser={isLikedByCurrUser()}
+            key={post._id}
+            onCommentAdd={onCommentAdd}
+            onLikeToggle={onLikeToggle}
+          ></PostActions>
         )}
       </div>
     </div>

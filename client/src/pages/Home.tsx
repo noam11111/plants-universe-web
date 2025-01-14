@@ -21,14 +21,11 @@ const Home: React.FC = () => {
   return (
     <div className="container mt-4 d-flex flex-column justify-content-center">
       {/* Posts Section */}
-      <div
-        className="row flex-grow-1"
-        style={{ minHeight: "300px", height: "600px" }}
-      >
+      <div className="row flex-grow-1" style={{ minHeight: "300px" }}>
         {paginatedPosts.length > 0 ? (
           paginatedPosts.map((post, index) => (
             <div className="col-12 mb-3" key={index}>
-              <PostComponent post={post} />
+              <PostComponent post={post} enablePostActions={true} />
             </div>
           ))
         ) : (

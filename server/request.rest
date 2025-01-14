@@ -21,7 +21,8 @@ Content-Type: application/json
 {
     "title": "title",
     "owner": "675063ff82f983bbbce757e8",
-    "content": "content"
+    "content": "content",
+    "photoSrc": ""
 }
 
 ##
