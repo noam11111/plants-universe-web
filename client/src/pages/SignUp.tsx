@@ -3,18 +3,17 @@ import SignUpForm from "../components/SignUpForm";
 import SocialSignUp from "../components/SocialSignUp";
 
 export type SignUpData = {
-  name: string;
   username: string;
   password: string;
-  photo: File | null;
+  email: string;
+  photo?: File[] | null;
 };
 
-const SignUp: React.FC = () => {
-  //TODO: add email field
+const SignUp = () => {
   const [formData, setFormData] = useState<SignUpData>({
-    name: "",
     username: "",
     password: "",
+    email: "",
     photo: null,
   });
 
