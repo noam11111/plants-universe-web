@@ -3,24 +3,21 @@ import PostComponent from "../components/Post";
 import UserProfile from "../components/UserProfile";
 import { Post } from "../interfaces/post";
 import { usePostsContext } from "../context/PostsContext";
+import { updateUser } from "../services/users";
+import { useUserContext } from "../context/UserContext";
 
 const Profile = () => {
   const { posts, setPosts } = usePostsContext();
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
-  const currentUsername = "PlantLover";
-  const [userProfile, setUserProfile] = useState({
-    username: "PlantLover",
-    email: "plantlover@example.com",
-    profilePhoto: "/path/to/profile-photo.jpg", // Replace with actual image path or state
-  });
+  const { user, refetchUser } = useUserContext() ?? {};
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
   const filteredPosts: Post[] = posts.filter(
-    (post) => post.owner.username === currentUsername
+    (post) => post.owner._id === user?._id
   );
   useEffect(() => {
     setPosts(
@@ -33,15 +30,20 @@ const Profile = () => {
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
 
-  const handleSaveProfile = (
+  const handleSaveProfile = async (
     updatedUsername: string,
     updatedProfilePhoto: string | null
   ) => {
-    setUserProfile((prevProfile) => ({
-      ...prevProfile,
-      username: updatedUsername,
-      profilePhoto: updatedProfilePhoto || prevProfile.profilePhoto,
-    }));
+    //TODO still have a problem with the refresh
+    if (user) {
+      await updateUser({
+        email: user.email,
+        _id: user._id!,
+        username: updatedUsername,
+        photoSrc: updatedProfilePhoto || user?.photoSrc,
+      });
+      refetchUser && refetchUser();
+    }
   };
   return (
     <>
@@ -95,14 +97,16 @@ const Profile = () => {
           </div>
 
           {/* User Profile Section */}
-          <div className="col-6 mt-4" style={{ width: "30%" }}>
-            <UserProfile
-              username={userProfile.username}
-              email={userProfile.email}
-              profilePhoto={userProfile.profilePhoto}
-              onSaveProfile={handleSaveProfile}
-            />
-          </div>
+          {user && (
+            <div className="col-6 mt-4" style={{ width: "30%" }}>
+              <UserProfile
+                username={user.username}
+                email={user.email}
+                profilePhoto={user.photoSrc || null}
+                onSaveProfile={handleSaveProfile}
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

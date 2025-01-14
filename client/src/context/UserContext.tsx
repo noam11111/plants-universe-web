@@ -8,6 +8,7 @@ type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
   loadingUser: boolean;
+  refetchUser: () => {};
 } | null;
 
 const UserContext = createContext<UserContextType>(null);
@@ -20,25 +21,32 @@ export const UserContextProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchAuth = async () => await getToken();
 
+  const refetchUser = async () => {
+    getUser();
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const token = await fetchAuth();
-        if (token) {
-          setUser(await getMe());
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoadingUser(false);
-      }
-    })();
+    getUser();
   }, []);
 
+  const getUser = async () => {
+    try {
+      const token = await fetchAuth();
+      if (token) {
+        setUser(await getMe());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      console.log(user);
+      setLoadingUser(false);
+    }
+  };
   return (
     <UserContext.Provider
       value={{
         user,
+        refetchUser,
         setUser,
         loadingUser,
       }}
