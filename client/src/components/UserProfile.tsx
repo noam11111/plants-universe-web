@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { FaEdit } from "react-icons/fa"; // For the edit icon
+import { useState } from "react";
+import { FaEdit } from "react-icons/fa";
 import DropzoneComponent from "./Dropzone";
 
 interface UserProfileProps {
@@ -12,12 +12,12 @@ interface UserProfileProps {
   ) => void;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({
+const UserProfile = ({
   username,
   email,
   profilePhoto,
   onSaveProfile,
-}) => {
+}: UserProfileProps) => {
   const [editMode, setEditMode] = useState(false);
   const [newUsername, setNewUsername] = useState(username);
   const [newProfilePhoto, setNewProfilePhoto] = useState<File | null>(null);

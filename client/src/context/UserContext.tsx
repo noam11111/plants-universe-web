@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 type UserContextType = {
   user: User | null;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void;
   loadingUser: boolean;
 } | null;
 

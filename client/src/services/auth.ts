@@ -83,14 +83,18 @@ const initAuthFromRefreshToken = async (refreshToken: string) => {
   }
 };
 
-export const authLogout = async (refreshToken: string) => {
+export const authLogout = async () => {
   try {
+    const {token} = JSON.parse(
+      localStorage.getItem(LocalStorageNames.RefreshToken) ?? ""
+    ) as Token;
+
     await axios.post(
       `${AUTH_BASE_URL}/logout`,
       {},
       {
         headers: {
-          Authorization: `Bearer ${refreshToken}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -99,6 +103,7 @@ export const authLogout = async (refreshToken: string) => {
     localStorage.removeItem(LocalStorageNames.RefreshToken);
   } catch (err) {
     console.log(err, "Failed to logout");
+    throw err;
   }
 };
 

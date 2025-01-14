@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import postsData from "../data/posts.json";
 import Post from "../components/Post";
+import postsData from "../data/posts.json";
+import { useEffect, useState } from "react";
 import UserProfile from "../components/UserProfile";
 
-const Profile: React.FC = () => {
+const Profile = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
   const currentUsername = "PlantLover";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PostForm from "../components/AddPostForm";
 
 export interface PostData {
@@ -6,7 +6,7 @@ export interface PostData {
   postPhoto: File | null;
 }
 
-const AddPost: React.FC = () => {
+const AddPost = () => {
   const [formData, setFormData] = useState<PostData>({
     description: "",
     postPhoto: null,

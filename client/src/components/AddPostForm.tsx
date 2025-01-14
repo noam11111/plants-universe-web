@@ -1,4 +1,3 @@
-import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,7 +22,7 @@ interface PostFormProps {
   onInputChange: (field: keyof PostData, value: string | File | null) => void;
 }
 
-const PostForm: React.FC<PostFormProps> = ({ formData, onInputChange }) => {
+const PostForm = ({ formData, onInputChange }: PostFormProps) => {
   const {
     handleSubmit,
     formState: { errors },
