@@ -1,37 +1,87 @@
 import { useState } from "react";
 import DropzoneComponent from "./Dropzone";
+import { Post } from "../interfaces/post";
+import PostActions from "./PostActions";
+import { createComment } from "../services/comment";
+import { useUserContext } from "../context/UserContext";
+import { deletePostById, updatePost } from "../services/posts";
+import { usePostsContext } from "../context/PostsContext";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
 interface PostProps {
   post: Post;
-  editPost?: () => void; // Optional function for editing the post
-  deletePost?: () => void; // Optional function for deleting the post
-  onEditSave?: (updatedPost: Post) => void; // Function to save edited post
+  enableChanges?: boolean;
+  enablePostActions?: boolean;
 }
 
-interface Post {
-  id: string;
-  username: string;
-  userPhoto: string;
-  postPhoto: string;
-  description: string;
-  editMode?: boolean; // Flag to indicate if the post is in edit mode
-}
-
-const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
+const PostComponent = ({
+  post,
+  enableChanges,
+  enablePostActions,
+}: PostProps) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
-  const [description, setDescription] = useState(post.description);
-  const [postPhoto, setPostPhoto] = useState(post.postPhoto);
+  const [description, setDescription] = useState(post.content);
+  const [postPhoto, setPostPhoto] = useState(post.photoSrc);
+  const { user } = useUserContext() ?? {};
+  const { setPosts, posts } = usePostsContext();
+
+  const isLikedByCurrUser = (): boolean => {
+    return post.likedBy.find((currUser) => currUser?._id === user?._id)
+      ? true
+      : false;
+  };
+  const onEditSave = () => {
+    // setPosts(
+    //   posts.map((currPost) =>
+    //     currPost._id === post._id ? { editMode: true, ...post } : post
+    //   )
+    // );
+
+    updatePost({ ...post, content: description });
+  };
+  const deletePost = () => {
+    deletePostById(post._id);
+  };
+  const onLikeToggle = () => {
+    const prevPosts = posts;
+    try {
+      if (user) {
+        const newLikedBy = post.likedBy.find(
+          (currUser) => currUser._id === user?._id
+        )
+          ? [user, ...post.likedBy]
+          : [...post.likedBy.filter((currUser) => currUser._id === user?._id)];
+        const newPost: Post = {
+          ...post,
+          likedBy: newLikedBy,
+        };
+        updatePostInState(newPost);
+        updatePost(newPost);
+      }
+    } catch (error) {
+      console.error(error);
+      setPosts(prevPosts);
+    }
+  };
+
+  const onCommentAdd = (commentContent: string) => {
+    if (user) {
+      const newPost: Post = {
+        ...post,
+        comments: [{ content: commentContent, user }, ...post.comments],
+      };
+      updatePostInState(newPost);
+      createComment(post._id, { content: commentContent, user: user });
+    }
+  };
+
+  const updatePostInState = (newPost: Post) => {
+    setPosts(posts.map((post) => (post._id === newPost._id ? newPost : post)));
+  };
 
   const handleSave = () => {
-    if (onEditSave) {
-      onEditSave({
-        ...post,
-        description,
-        postPhoto,
-        editMode: false,
-      });
-    }
+    onEditSave();
+
     setIsEditing(false);
   };
 
@@ -45,7 +95,7 @@ const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
         overflow: "hidden",
       }}
     >
-      {(editPost || deletePost) && (
+      {enableChanges && (
         <div
           className="edit-buttons"
           style={{
@@ -56,7 +106,7 @@ const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
             gap: "10px",
           }}
         >
-          {editPost && !isEditing && (
+          {enableChanges && !isEditing && (
             <button
               className="btn btn-light"
               style={{ border: "none", background: "transparent" }}
@@ -80,12 +130,12 @@ const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
       <div className="card-body" style={{ padding: "1rem" }}>
         <div className="d-flex align-items-center mb-1">
           <img
-            src={post.userPhoto}
-            alt={post.username}
+            src={post.owner.photoSrc ? post.owner.photoSrc : "/temp-user.png"}
+            alt={post.owner.username}
             className="rounded-circle user-photo m-2"
             style={{ width: "30px", height: "30px" }}
           />
-          <span className="ml-3">{post.username}</span>
+          <span className="ml-3">{post.owner.username}</span>
         </div>
 
         {isEditing ? (
@@ -116,9 +166,20 @@ const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
             <p>{description}</p>
           </>
         )}
+
+        {enablePostActions && (
+          <PostActions
+            comments={post.comments}
+            likesNumber={post.likedBy.length}
+            likedByUser={isLikedByCurrUser()}
+            key={post._id}
+            onCommentAdd={onCommentAdd}
+            onLikeToggle={onLikeToggle}
+          ></PostActions>
+        )}
       </div>
     </div>
   );
 };
 
-export default Post;
+export default PostComponent;

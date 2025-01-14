@@ -13,6 +13,16 @@ const postSchema = new mongoose.Schema<Post>({
     type: Date,
     default: Date.now,
   },
+  likedBy: {
+    type: [mongoose.Types.ObjectId],
+    ref: "users",
+    default: [],
+  },
+  comments: {
+    type: [mongoose.Types.ObjectId],
+    ref: "comments",
+    default: [],
+  },
 });
 
 export const PostModel = mongoose.model<Post>("posts", postSchema);

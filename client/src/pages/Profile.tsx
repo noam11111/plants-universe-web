@@ -1,13 +1,14 @@
-import Post from "../components/Post";
-import postsData from "../data/posts.json";
 import { useEffect, useState } from "react";
+import PostComponent from "../components/Post";
 import UserProfile from "../components/UserProfile";
+import { Post } from "../interfaces/post";
+import { usePostsContext } from "../context/PostsContext";
 
 const Profile = () => {
+  const { posts, setPosts } = usePostsContext();
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
   const currentUsername = "PlantLover";
-  const [posts, setPosts] = useState<Post[]>([]);
   const [userProfile, setUserProfile] = useState({
     username: "PlantLover",
     email: "plantlover@example.com",
@@ -18,8 +19,8 @@ const Profile = () => {
     setCurrentPage(page);
   };
 
-  const filteredPosts: Post[] = postsData.filter(
-    (post) => post.username === currentUsername
+  const filteredPosts: Post[] = posts.filter(
+    (post) => post.owner.username === currentUsername
   );
   useEffect(() => {
     setPosts(
@@ -31,18 +32,6 @@ const Profile = () => {
   }, [currentPage]);
 
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-
-  const editPost = (post: Post) => {
-    console.log("edittttt");
-    setPosts(
-      posts.map((currPost) =>
-        currPost.id === post.id ? { editMode: true, ...post } : post
-      )
-    );
-  };
-  const deletePost = (post: Post) => {
-    // TODO post delete
-  };
 
   const handleSaveProfile = (
     updatedUsername: string,
@@ -67,13 +56,9 @@ const Profile = () => {
               {posts.length > 0 ? (
                 posts.map((post, index) => (
                   <div className="col-12 mb-3" key={index}>
-                    <Post
-                      deletePost={() => deletePost(post)}
-                      editPost={() => editPost(post)}
-                      onEditSave={(updatedPost: Post) =>
-                        console.log(updatedPost)
-                      }
-                      key={post.id}
+                    <PostComponent
+                      enableChanges={true}
+                      key={post._id}
                       post={post}
                     />
                   </div>

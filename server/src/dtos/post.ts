@@ -1,4 +1,5 @@
 import { User } from "./user";
+import { Comment } from "./comment";
 
 export type Post = {
   _id: string;
@@ -6,4 +7,6 @@ export type Post = {
   content: string;
   photoSrc: string;
   createdAt: Date;
+  likedBy: User[];
+  comments: Comment[];
 };
