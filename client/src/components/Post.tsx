@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa"; // Importing the edit and delete icons
 import DropzoneComponent from "./Dropzone";
+import { User } from "../interfaces/user";
 
 interface PostProps {
   post: Post;
-  editPost?: () => void; // Optional function for editing the post
   deletePost?: () => void; // Optional function for deleting the post
-  onEditSave?: (updatedPost: Post) => void; // Function to save edited post
+  onEditSave?: () => void; // Function to save edited post
+  onLikeToggle?: (postId: string) => void; // Function to handle like toggle
+  onCommentAdd?: (postId: string, comment: string) => void; // Function to handle adding comments
 }
 
 interface Post {
@@ -16,13 +18,15 @@ interface Post {
   postPhoto: string;
   description: string;
   editMode?: boolean; // Flag to indicate if the post is in edit mode
+  likedBy: User[];
 }
 
 const Post: React.FC<PostProps> = ({
   post,
-  editPost,
   deletePost,
   onEditSave,
+  onLikeToggle,
+  onCommentAdd,
 }) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
   const [description, setDescription] = useState(post.description);
@@ -50,7 +54,7 @@ const Post: React.FC<PostProps> = ({
         overflow: "hidden",
       }}
     >
-      {(editPost || deletePost) && (
+      {(onEditSave || deletePost) && (
         <div
           className="edit-buttons"
           style={{
@@ -61,7 +65,7 @@ const Post: React.FC<PostProps> = ({
             gap: "10px",
           }}
         >
-          {editPost && !isEditing && (
+          {onEditSave && !isEditing && (
             <button
               className="btn btn-light"
               style={{ border: "none", background: "transparent" }}

@@ -1,6 +1,4 @@
 import { Request, Response } from "express";
-import { Post } from "../dtos/post";
-import { PostModel } from "../models/posts_model";
 import { User } from "../dtos/user";
 import { UserModel } from "../models/user_model";
 import { createNewUser, findUserById } from "../services/user_service";

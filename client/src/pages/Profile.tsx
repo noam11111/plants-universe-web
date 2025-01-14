@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import postsData from "../data/posts.json";
 import Post from "../components/Post";
 import UserProfile from "../components/UserProfile";
+import { postsData } from "../data/posts";
 
 const Profile: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,10 +69,7 @@ const Profile: React.FC = () => {
                   <div className="col-12 mb-3" key={index}>
                     <Post
                       deletePost={() => deletePost(post)}
-                      editPost={() => editPost(post)}
-                      onEditSave={(updatedPost: Post) =>
-                        console.log(updatedPost)
-                      }
+                      onEditSave={() => editPost(post)}
                       key={post.id}
                       post={post}
                     />

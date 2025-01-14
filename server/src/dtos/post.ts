@@ -6,4 +6,5 @@ export type Post = {
   content: string;
   photoSrc: string;
   createdAt: Date;
+  likedBy: User[];
 };
