@@ -5,7 +5,7 @@ import DropzoneComponent from "./Dropzone";
 interface UserProfileProps {
   username: string;
   email: string;
-  profilePhoto: string;
+  profilePhoto: string | null;
   onSaveProfile: (
     updatedUsername: string,
     updatedProfilePhoto: string | null
@@ -50,6 +50,9 @@ const UserProfile = ({
         {editMode ? (
           <div>
             <div className="mb-3">
+              <p>
+                <strong>Email:</strong> {email}
+              </p>
               <label htmlFor="username" className="form-label">
                 Username
               </label>
@@ -68,26 +71,26 @@ const UserProfile = ({
               />
             </div>
 
-            <button className="btn btn-primary" onClick={handleSave}>
+            <button className="btn btn-success" onClick={handleSave}>
               Save
             </button>
           </div>
         ) : (
           <div>
+            <p>
+              <strong>Email:</strong> {email}
+            </p>
+            <p>
+              <strong>Username:</strong> {username}
+            </p>
             <div className="mb-3">
               <img
-                src={profilePhoto}
+                src={profilePhoto || "/temp-user.png"}
                 alt="Profile"
                 className="rounded-circle"
                 style={{ width: "80px", height: "80px" }}
               />
             </div>
-            <p>
-              <strong>Username:</strong> {username}
-            </p>
-            <p>
-              <strong>Email:</strong> {email}
-            </p>
           </div>
         )}
       </div>

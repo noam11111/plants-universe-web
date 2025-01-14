@@ -6,3 +6,10 @@ export interface User {
   tokens?: string[];
   photoSrc?: string;
 }
+
+export interface UpdateUser {
+  _id: string;
+  username: string;
+  photoSrc?: string;
+  email: string;
+}

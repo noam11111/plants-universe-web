@@ -20,7 +20,7 @@ const PostComponent = ({
   enableChanges,
   enablePostActions,
 }: PostProps) => {
-  const [isEditing, setIsEditing] = useState(post.editMode || false);
+  const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState(post.content);
   const [postPhoto, setPostPhoto] = useState(post.photoSrc);
   const { user } = useUserContext() ?? {};
@@ -47,11 +47,14 @@ const PostComponent = ({
     const prevPosts = posts;
     try {
       if (user) {
-        const newLikedBy = post.likedBy.find(
-          (currUser) => currUser._id === user?._id
-        )
-          ? [user, ...post.likedBy]
-          : [...post.likedBy.filter((currUser) => currUser._id === user?._id)];
+        let newLikedBy;
+        if (isLikedByCurrUser()) {
+          newLikedBy = post.likedBy.filter(
+            (currUser) => currUser._id !== user?._id
+          );
+        } else {
+          newLikedBy = [user, ...post.likedBy];
+        }
         const newPost: Post = {
           ...post,
           likedBy: newLikedBy,

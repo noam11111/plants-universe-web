@@ -13,7 +13,11 @@ const getAllPosts = async (req: Request, res: Response) => {
         .sort({ createdAt: -1 })
         .populate("owner");
     } else {
-      posts = await PostModel.find().sort({ createdAt: -1 }).populate("owner");
+      posts = await PostModel.find()
+        .sort({ createdAt: -1 })
+        .populate("owner")
+        .populate("likedBy")
+        .populate("comments");
     }
 
     res.send(posts);
