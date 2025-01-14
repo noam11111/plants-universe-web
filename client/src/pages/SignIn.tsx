@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import SignInForm from "../components/SignInForm";
 
 export type SignInData = {
@@ -6,7 +6,7 @@ export type SignInData = {
   password: string;
 };
 
-const SignIn: React.FC = () => {
+const SignIn = () => {
   const [formData, setFormData] = useState<SignInData>({
     username: "",
     password: "",

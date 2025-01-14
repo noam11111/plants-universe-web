@@ -15,9 +15,10 @@ const usersSchema = new mongoose.Schema<User>({
     type: String,
     required: true,
   },
+  photo: { type: String },
   tokens: {
-    type: [String]
-  }
+    type: [String],
+  },
 });
 
 export const UserModel = mongoose.model<User>("users", usersSchema);
