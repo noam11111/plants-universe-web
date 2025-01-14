@@ -65,4 +65,19 @@ const updatePost = async (req: Request, res: Response) => {
   }
 };
 
-export { getAllPosts, getPostById, createPost, updatePost };
+const deletePostById = async (req: Request, res: Response) => {
+  const postId = req.params.postId;
+
+  try {
+    const post = await PostModel.deleteOne({ _id: postId });
+    if (post.deletedCount > 0) {
+      res.status(200).send("The post deleted");
+    } else {
+      res.status(404).send("Post not found");
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+export { getAllPosts, getPostById, createPost, updatePost, deletePostById };

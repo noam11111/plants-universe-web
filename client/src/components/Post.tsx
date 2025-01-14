@@ -1,27 +1,17 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa"; // Importing the edit and delete icons
 import DropzoneComponent from "./Dropzone";
-import { User } from "../interfaces/user";
+import { Post } from "../interfaces/post";
 
 interface PostProps {
   post: Post;
   deletePost?: () => void; // Optional function for deleting the post
-  onEditSave?: () => void; // Function to save edited post
+  onEditSave?: (updatedPost: Post) => void; // Function to save edited post
   onLikeToggle?: (postId: string) => void; // Function to handle like toggle
   onCommentAdd?: (postId: string, comment: string) => void; // Function to handle adding comments
 }
 
-interface Post {
-  id: string;
-  username: string;
-  userPhoto: string;
-  postPhoto: string;
-  description: string;
-  editMode?: boolean; // Flag to indicate if the post is in edit mode
-  likedBy: User[];
-}
-
-const Post: React.FC<PostProps> = ({
+const PostComponent: React.FC<PostProps> = ({
   post,
   deletePost,
   onEditSave,
@@ -29,15 +19,15 @@ const Post: React.FC<PostProps> = ({
   onCommentAdd,
 }) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
-  const [description, setDescription] = useState(post.description);
-  const [postPhoto, setPostPhoto] = useState(post.postPhoto);
+  const [description, setDescription] = useState(post.content);
+  const [postPhoto, setPostPhoto] = useState(post.photoSrc);
 
   const handleSave = () => {
     if (onEditSave) {
       onEditSave({
         ...post,
-        description,
-        postPhoto,
+        content: description,
+        photoSrc: postPhoto,
         editMode: false,
       });
     }
@@ -89,12 +79,12 @@ const Post: React.FC<PostProps> = ({
       <div className="card-body" style={{ padding: "1rem" }}>
         <div className="d-flex align-items-center mb-1">
           <img
-            src={post.userPhoto}
-            alt={post.username}
+            src={post.owner.photoSrc ? post.owner.photoSrc : "/temp-user.png"}
+            alt={post.owner.username}
             className="rounded-circle user-photo m-2"
             style={{ width: "30px", height: "30px" }}
           />
-          <span className="ml-3">{post.username}</span>
+          <span className="ml-3">{post.owner.username}</span>
         </div>
 
         {isEditing ? (
@@ -130,4 +120,4 @@ const Post: React.FC<PostProps> = ({
   );
 };
 
-export default Post;
+export default PostComponent;

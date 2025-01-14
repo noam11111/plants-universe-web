@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
-import Post from "../components/Post";
+import PostComponent from "../components/Post";
 import UserProfile from "../components/UserProfile";
-import { postsData } from "../data/posts";
+import { Post } from "../interfaces/post";
+import { usePostsContext } from "../context/PostsContext";
 
 const Profile: React.FC = () => {
+  const { posts, setPosts } = usePostsContext();
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
   const currentUsername = "PlantLover";
-  const [posts, setPosts] = useState<Post[]>([]);
   const [userProfile, setUserProfile] = useState({
     username: "PlantLover",
     email: "plantlover@example.com",
@@ -18,8 +19,8 @@ const Profile: React.FC = () => {
     setCurrentPage(page);
   };
 
-  const filteredPosts: Post[] = postsData.filter(
-    (post) => post.username === currentUsername
+  const filteredPosts: Post[] = posts.filter(
+    (post) => post.owner.username === currentUsername
   );
   useEffect(() => {
     setPosts(
@@ -67,7 +68,7 @@ const Profile: React.FC = () => {
               {posts.length > 0 ? (
                 posts.map((post, index) => (
                   <div className="col-12 mb-3" key={index}>
-                    <Post
+                    <PostComponent
                       deletePost={() => deletePost(post)}
                       onEditSave={() => editPost(post)}
                       key={post.id}

@@ -1,21 +1,22 @@
 import React, { useState } from "react";
-import Post from "../components/Post";
-import { postsData } from "../data/posts";
+import PostComponent from "../components/Post";
+import { usePostsContext } from "../context/PostsContext";
 
 const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
+  const { posts } = usePostsContext();
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const paginatedPosts = postsData.slice(
+  const paginatedPosts = posts.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage
   );
 
-  const totalPages = Math.ceil(postsData.length / postsPerPage);
+  const totalPages = Math.ceil(posts.length / postsPerPage);
 
   return (
     <div className="container mt-4 d-flex flex-column justify-content-center">
@@ -27,7 +28,7 @@ const Home: React.FC = () => {
         {paginatedPosts.length > 0 ? (
           paginatedPosts.map((post, index) => (
             <div className="col-12 mb-3" key={index}>
-              <Post post={post} />
+              <PostComponent post={post} />
             </div>
           ))
         ) : (
