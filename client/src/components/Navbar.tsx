@@ -25,7 +25,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light vh-20">
+    <nav
+      className="navbar navbar-expand-lg navbar-light bg-light"
+      style={{ minHeight: "7vh" }}
+    >
       <div className="container">
         <Link className="navbar-brand" to="/">
           <img

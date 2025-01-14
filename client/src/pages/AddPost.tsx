@@ -2,14 +2,14 @@ import { useState } from "react";
 import PostForm from "../components/AddPostForm";
 
 export interface PostData {
-  description: string;
-  postPhoto: File | null;
+  content: string;
+  photo?: File | null;
 }
 
 const AddPost = () => {
   const [formData, setFormData] = useState<PostData>({
-    description: "",
-    postPhoto: null,
+    content: "",
+    photo: null,
   });
 
   const handleInputChange = (

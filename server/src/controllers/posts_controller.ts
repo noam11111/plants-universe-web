@@ -1,6 +1,7 @@
 import { Post } from "../dtos/post";
 import { Request, Response } from "express";
 import { PostModel } from "../models/posts_model";
+import { uploadFile } from "../utils/multer";
 
 const getAllPosts = async (req: Request, res: Response) => {
   try {
@@ -37,10 +38,13 @@ const getPostById = async (req: Request, res: Response) => {
 };
 
 const createPost = async (req: Request, res: Response) => {
-  const createdPost: Post = req.body;
   try {
-    const post: Post = await PostModel.create(createdPost);
-    res.status(201).send(post);
+    await uploadFile(req, res);
+    const post: Post = JSON.parse(req.body.post);
+    post.photoSrc = req.file.filename;
+    await PostModel.create(post);
+
+    res.status(201).send();
   } catch (error) {
     res.status(500).send(error.message);
   }
