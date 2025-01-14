@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa"; // Importing the edit and delete icons
+import { useState } from "react";
 import DropzoneComponent from "./Dropzone";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 interface PostProps {
   post: Post;
@@ -18,12 +18,7 @@ interface Post {
   editMode?: boolean; // Flag to indicate if the post is in edit mode
 }
 
-const Post: React.FC<PostProps> = ({
-  post,
-  editPost,
-  deletePost,
-  onEditSave,
-}) => {
+const Post = ({ post, editPost, deletePost, onEditSave }: PostProps) => {
   const [isEditing, setIsEditing] = useState(post.editMode || false);
   const [description, setDescription] = useState(post.description);
   const [postPhoto, setPostPhoto] = useState(post.postPhoto);

@@ -3,7 +3,9 @@ import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import AddPost from "./pages/AddPost";
 import Profile from "./pages/Profile";
+import Navbar from "./components/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min";
 import { useUserContext } from "./context/UserContext";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
@@ -11,17 +13,19 @@ function App() {
   const { user, loadingUser } = useUserContext() ?? {};
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{ backgroundColor: "#e4fcd9" }}
-    >
-      {loadingUser ? (
-        <div
-          className="spinner-border text-success"
-          style={{ width: "15rem", height: "15rem" }}
-        />
-      ) : (
-        <Router>
+    <Router>
+      {user && <Navbar />}
+
+      <div
+        className="d-flex justify-content-center align-items-center vh-80"
+        style={{ backgroundColor: "#e4fcd9" }}
+      >
+        {loadingUser ? (
+          <div
+            className="spinner-border text-success"
+            style={{ width: "15rem", height: "15rem" }}
+          />
+        ) : (
           <Routes>
             {!user ? (
               <>
@@ -36,9 +40,9 @@ function App() {
               </>
             )}
           </Routes>
-        </Router>
-      )}
-    </div>
+        )}
+      </div>
+    </Router>
   );
 }
 

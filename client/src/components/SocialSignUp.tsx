@@ -1,7 +1,6 @@
-import React from "react";
 import { FaGoogle } from "react-icons/fa";
 
-const SocialSignUp: React.FC = () => {
+const SocialSignUp = () => {
   return (
     <div className="mt-1">
       <p className="text-center">Or sign up with:</p>

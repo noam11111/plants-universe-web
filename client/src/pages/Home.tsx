@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import postsData from "../data/posts.json";
+import { useState } from "react";
 import Post from "../components/Post";
+import postsData from "../data/posts.json";
 
-const Home: React.FC = () => {
+const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
 

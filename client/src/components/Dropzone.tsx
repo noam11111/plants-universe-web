@@ -1,16 +1,15 @@
-import React from "react";
+import { FiUpload } from "react-icons/fi";
 import { useDropzone } from "react-dropzone";
-import { FiUpload } from "react-icons/fi"; // Import the upload icon from react-icons
 
 interface DropzoneComponentProps {
   onFileSelect: (file: File | null) => void;
   selectedFile: File | null;
 }
 
-const DropzoneComponent: React.FC<DropzoneComponentProps> = ({
+const DropzoneComponent = ({
   onFileSelect,
   selectedFile,
-}) => {
+}: DropzoneComponentProps) => {
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       "image/*": [],
