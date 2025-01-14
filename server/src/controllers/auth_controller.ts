@@ -4,6 +4,7 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import { User } from "../dtos/user";
 import { Request, Response } from "express";
+import { uploadFile } from "../utils/multer";
 import { UserModel } from "../models/user_model";
 import { createNewUser } from "../services/user_service";
 import { generateRefreshToken } from "../utils/auth/generate_refresh_token";
@@ -14,21 +15,27 @@ import {
 } from "../utils/auth/generate_access_token";
 
 export const register = async (req: Request, res: Response) => {
-  const user: User = req.body;
   try {
+    await uploadFile(req, res);
+
+    const user: User = JSON.parse(req.body.user);
+    user.photo = req.file.filename;
+
     const userExistsCheck = await UserModel.findOne({
       username: user.username,
     });
 
     if (userExistsCheck) {
-      throw Error("User already exists");
+      res.status(400).send({ userExist: true, message: "User already exists" });
+      return;
     }
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(user.password, salt);
     await createNewUser({ ...user, password: hashedPassword });
 
-    res.status(201).send("User registered successfully");
+    req.body = { username: user.username, password: user.password };
+    login(req, res);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -56,7 +63,7 @@ export const login = async (req: Request, res: Response) => {
 
     user.tokens = user.tokens ? [...user.tokens, refreshToken] : [refreshToken];
     await user.save();
-    const a = moment().add(ms(process.env.ACCESS_TOKEN_EXPIRATION))
+
     res.status(200).send({
       accessToken: {
         token: accessToken,

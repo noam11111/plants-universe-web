@@ -1,7 +1,8 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import moment from "moment";
 import { Token } from "../interfaces/auth";
 import { User } from "../interfaces/user";
+import { SignUpData } from "../pages/SignUp";
 
 const AUTH_BASE_URL = `${import.meta.env.VITE_SERVER_URL}/auth`;
 
@@ -127,5 +128,51 @@ export const login = async (username: string, password: string) => {
   } catch (err) {
     console.log(err, "Failed to login");
     throw err;
+  }
+};
+export const signup = async (userData: SignUpData) => {
+  try {
+    const formData = new FormData();
+    const { photo, ...userInfo } = userData;
+
+    if (photo) {
+      formData.append("file", photo[0]);
+    }
+
+    formData.append("user", JSON.stringify(userInfo));
+
+    const { accessToken, refreshToken, user } = (
+      await axios.post<{ accessToken: Token; refreshToken: Token; user: User }>(
+        `${AUTH_BASE_URL}/register`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "image/jpeg",
+          },
+        }
+      )
+    ).data;
+
+    localStorage.setItem(
+      LocalStorageNames.AccessToken,
+      JSON.stringify({ accessToken })
+    );
+
+    localStorage.setItem(
+      LocalStorageNames.RefreshToken,
+      JSON.stringify(refreshToken)
+    );
+
+    return user;
+  } catch (err) {
+    if (
+      err instanceof AxiosError &&
+      err.response?.status === 400 &&
+      err.response.data.userExist
+    ) {
+      throw new Error("Username already exists, please login.");
+    } else {
+      throw new Error("Failed to signup user, please try again.");
+    }
   }
 };

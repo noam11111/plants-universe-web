@@ -5,14 +5,15 @@ import { SignInData } from "../pages/SignIn";
 import { login } from "../services/auth";
 import { useUserContext } from "../context/UserContext";
 import { useState } from "react";
+import { isEmpty } from "lodash";
 
 type SignInFormProps = {
   formData: SignInData;
   onInputChange: (field: keyof SignInData, value: string | File | null) => void;
 };
 const formSchema = z.object({
-  username: z.string(),
-  password: z.string(),
+  username: z.string().min(1),
+  password: z.string().min(1),
 });
 
 type formData = z.infer<typeof formSchema>;
@@ -30,11 +31,13 @@ const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
 
   const onSubmit = async ({ username, password }: formData) => {
     try {
-      const user = await login(username, password);
-      setUser?.(user);
+      if (isEmpty(errors)) {
+        const user = await login(username, password);
+        setUser?.(user);
+      }
     } catch (err) {
       console.error("error login user", err);
-      setServerError("Failed to login user, please try again.");
+      setServerError("Failed to signup user, please try again.");
     }
   };
   return (
