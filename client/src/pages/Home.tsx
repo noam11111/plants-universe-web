@@ -1,30 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PostComponent from "../components/Post";
 import { usePostsContext } from "../context/PostsContext";
 
 const Home = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 2;
-  const { posts } = usePostsContext();
+  const { posts, fetchPosts, isLoading } = usePostsContext() ?? {};
+
+  useEffect(() => {
+    fetchPosts?.();
+  }, []);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const paginatedPosts = posts.slice(
+  const paginatedPosts = posts?.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage
   );
 
-  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const totalPages = Math.ceil((posts?.length ?? 0) / postsPerPage);
 
-  return (
+  return !paginatedPosts || isLoading ? (
+    <div
+      className="spinner-border text-success"
+      style={{ width: "15rem", height: "15rem" }}
+    />
+  ) : (
     <div className="container mt-4 d-flex flex-column justify-content-center">
-      {/* Posts Section */}
-      <div className="row flex-grow-1" style={{ minHeight: "300px" }}>
+      <div className="row flex-grow-1">
         {paginatedPosts.length > 0 ? (
-          paginatedPosts.map((post, index) => (
-            <div className="col-12 mb-3" key={index}>
+          paginatedPosts.map((post) => (
+            <div
+              className="col-6 mb-3  d-flex justify-content-center"
+              key={post._id}
+            >
               <PostComponent post={post} enablePostActions={true} />
             </div>
           ))

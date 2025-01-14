@@ -17,8 +17,8 @@ function App() {
       {user && <Navbar />}
 
       <div
-        className="d-flex justify-content-center align-items-center vh-80"
-        style={{ backgroundColor: "#e4fcd9" }}
+        className="d-flex justify-content-center align-items-center"
+        style={{ backgroundColor: "#e4fcd9", minHeight: "93vh" }}
       >
         {loadingUser ? (
           <div

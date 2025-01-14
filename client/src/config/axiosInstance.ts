@@ -12,7 +12,7 @@ export const createAxiosInstance = (baseURL: string) => {
 
       if (authToken) {
         config.headers.set("Authorization", `Bearer ${authToken}`);
-        config.headers.set("Content-Type", "application/json");
+        config.headers.set("Content-Type", "application/json", false);
       } else throw new Error("No token found");
     } catch (err) {
       console.log("Error injecting token in request:", err);

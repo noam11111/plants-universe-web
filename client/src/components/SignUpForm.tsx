@@ -1,19 +1,13 @@
 import { z } from "zod";
 import { isEmpty } from "lodash";
-import React, { useState } from "react";
+import { useState } from "react";
 import { signup } from "../services/auth";
 import { useForm } from "react-hook-form";
 import { SignUpData } from "../pages/SignUp";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserContext } from "../context/UserContext";
-
-const ACCEPTED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-];
+import { ACCEPTED_IMAGE_TYPES } from "../constants/files";
 
 type SignUpFormProps = {
   formData: SignUpData;

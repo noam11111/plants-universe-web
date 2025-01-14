@@ -9,3 +9,9 @@ export interface Post {
   likedBy: User[];
   comments: PostComment[];
 }
+
+export interface CreatePost {
+  owner: string;
+  content: string;
+  photo?: File | null;
+}

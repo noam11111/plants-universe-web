@@ -7,6 +7,7 @@ import { useUserContext } from "../context/UserContext";
 import { deletePostById, updatePost } from "../services/posts";
 import { usePostsContext } from "../context/PostsContext";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { IMAGES_URL } from "../constants/files";
 
 interface PostProps {
   post: Post;
@@ -23,7 +24,7 @@ const PostComponent = ({
   const [description, setDescription] = useState(post.content);
   const [postPhoto, setPostPhoto] = useState(post.photoSrc);
   const { user } = useUserContext() ?? {};
-  const { setPosts, posts } = usePostsContext();
+  const { setPosts, posts } = usePostsContext() ?? {};
 
   const isLikedByCurrUser = (): boolean => {
     return post.likedBy.find((currUser) => currUser?._id === user?._id)
@@ -63,7 +64,7 @@ const PostComponent = ({
       }
     } catch (error) {
       console.error(error);
-      setPosts(prevPosts);
+      setPosts?.(prevPosts ?? []);
     }
   };
 
@@ -79,7 +80,9 @@ const PostComponent = ({
   };
 
   const updatePostInState = (newPost: Post) => {
-    setPosts(posts.map((post) => (post._id === newPost._id ? newPost : post)));
+    setPosts?.(
+      posts?.map((post) => (post._id === newPost._id ? newPost : post)) ?? []
+    );
   };
 
   const handleSave = () => {
@@ -92,8 +95,7 @@ const PostComponent = ({
     <div
       className="post card mb-3"
       style={{
-        width: "40vw",
-        height: "40vh",
+        width: "350px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -130,10 +132,14 @@ const PostComponent = ({
         </div>
       )}
 
-      <div className="card-body" style={{ padding: "1rem" }}>
+      <div className="card-body d-flex justify-content-center row" style={{ padding: "1rem" }}>
         <div className="d-flex align-items-center mb-1">
           <img
-            src={post.owner.photoSrc ? post.owner.photoSrc : "/temp-user.png"}
+            src={
+              IMAGES_URL + post.owner.photoSrc
+                ? post.owner.photoSrc
+                : "/temp-user.png"
+            }
             alt={post.owner.username}
             className="rounded-circle user-photo m-2"
             style={{ width: "30px", height: "30px" }}
@@ -161,12 +167,11 @@ const PostComponent = ({
         ) : (
           <>
             <img
-              src={postPhoto}
+              src={IMAGES_URL + postPhoto}
               alt="Post"
-              className="post-photo mb-1"
-              style={{ width: "30vw", height: "20vh" }}
+              className="img-fluid mb-1"
             />
-            <p>{description}</p>
+            <p className="text-center">{description}</p>
           </>
         )}
 
