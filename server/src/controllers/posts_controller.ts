@@ -17,7 +17,7 @@ const getAllPosts = async (req: Request, res: Response) => {
         .sort({ createdAt: -1 })
         .populate("owner", "-tokens -email -password")
         .populate("likedBy")
-        .populate("comments");
+        .populate({ path: "comments", populate: { path: "user" } });
     }
 
     res.send(posts);
@@ -61,9 +61,14 @@ const updatePost = async (req: Request, res: Response) => {
     const postId: string = req.params.postId;
 
     const updatedPostContent: Post = JSON.parse(req.body.updatedPostContent);
-    updatedPostContent.photoSrc = req.file.filename;
 
-    const oldPostPhoto = (await PostModel.findById(postId)).photoSrc;
+    let oldPostPhoto: string;
+
+    if (req.file) {
+      updatedPostContent.photoSrc = req.file?.filename;
+      oldPostPhoto = (await PostModel.findById(postId)).photoSrc;
+    }
+
     const newPost = await PostModel.findOneAndUpdate(
       { _id: postId },
       updatedPostContent,
