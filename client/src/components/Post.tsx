@@ -36,9 +36,14 @@ const PostComponent = ({
     updatePost(post._id, { photo: editedPhoto, content: description });
     setEditedPhotoURL(editedPhoto ? URL.createObjectURL(editedPhoto) : null);
   };
+  
   const deletePost = () => {
     deletePostById(post._id);
+    setPosts?.(
+      posts?.filter((currentPost) => currentPost._id !== post._id) ?? []
+    );
   };
+
   const onLikeToggle = () => {
     const prevPosts = posts;
     try {
@@ -77,7 +82,9 @@ const PostComponent = ({
 
   const updatePostInState = (newPost: Post) => {
     setPosts?.(
-      posts?.map((post) => (post._id === newPost._id ? newPost : post)) ?? []
+      (prevPosts) =>
+        prevPosts?.map((post) => (post._id === newPost._id ? newPost : post)) ??
+        []
     );
   };
 
