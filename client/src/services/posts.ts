@@ -1,5 +1,5 @@
+import { CreatePost, UpdatePost } from "../interfaces/post";
 import { createAxiosInstance } from "../config/axiosInstance";
-import { CreatePost, Post } from "../interfaces/post";
 
 const axiosInstance = createAxiosInstance(
   `${import.meta.env.VITE_SERVER_URL}/posts`
@@ -26,8 +26,26 @@ export const createPost = async (post: CreatePost) => {
   });
 };
 
-export const updatePost = async (post: Post) => {
-  return (await axiosInstance.put(`/${post._id}`, post)).data;
+export const updatePost = async (
+  postId: string,
+  updatePostData: UpdatePost
+) => {
+  const formData = new FormData();
+  const { photo, ...updatedPostInfo } = updatePostData;
+
+  if (photo) {
+    formData.append("file", photo);
+  }
+
+  formData.append("updatedPostContent", JSON.stringify(updatedPostInfo));
+
+  return (
+    await axiosInstance.put(`/${postId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+  ).data;
 };
 
 export const deletePostById = async (postId: string) => {

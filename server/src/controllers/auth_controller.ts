@@ -4,7 +4,7 @@ import moment from "moment";
 import jwt from "jsonwebtoken";
 import { User } from "../dtos/user";
 import { Request, Response } from "express";
-import { uploadFile } from "../utils/multer";
+import { deleteFile, uploadFile } from "../utils/multer";
 import { UserModel } from "../models/user_model";
 import { OAuth2Client } from "google-auth-library";
 import { createNewUser } from "../services/user_service";
@@ -22,12 +22,11 @@ export const register = async (req: Request, res: Response) => {
     });
 
     if (usernameExistsCheck) {
-      res
-        .status(400)
-        .send({
-          userExist: true,
-          message: "User already exists, please login",
-        });
+      req.file?.filename && deleteFile(req.file.filename);
+      res.status(400).send({
+        userExist: true,
+        message: "User already exists, please login",
+      });
       return;
     }
 
@@ -36,12 +35,12 @@ export const register = async (req: Request, res: Response) => {
     });
 
     if (emailExistsCheck) {
-      res
-        .status(400)
-        .send({
-          userExist: true,
-          message: "email already exists, please login",
-        });
+      req.file?.filename && deleteFile(req.file.filename);
+
+      res.status(400).send({
+        userExist: true,
+        message: "email already exists, please login",
+      });
       return;
     }
 
@@ -52,6 +51,7 @@ export const register = async (req: Request, res: Response) => {
     req.body = { username: user.username, password: user.password };
     login(req, res);
   } catch (error) {
+    req.file?.filename && deleteFile(req.file.filename);
     res.status(500).send(error.message);
   }
 };

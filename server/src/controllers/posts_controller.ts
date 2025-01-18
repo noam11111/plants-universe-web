@@ -1,7 +1,7 @@
 import { Post } from "../dtos/post";
 import { Request, Response } from "express";
+import { deleteFile, uploadFile } from "../utils/multer";
 import { PostModel } from "../models/posts_model";
-import { uploadFile } from "../utils/multer";
 
 const getAllPosts = async (req: Request, res: Response) => {
   try {
@@ -11,11 +11,11 @@ const getAllPosts = async (req: Request, res: Response) => {
     if (postOwner) {
       posts = await PostModel.find({ owner: postOwner })
         .sort({ createdAt: -1 })
-        .populate("owner");
+        .populate("owner", "-tokens -email -password");
     } else {
       posts = await PostModel.find()
         .sort({ createdAt: -1 })
-        .populate("owner")
+        .populate("owner", "-tokens -email -password")
         .populate("likedBy")
         .populate("comments");
     }
@@ -50,25 +50,35 @@ const createPost = async (req: Request, res: Response) => {
 
     res.status(201).send();
   } catch (error) {
+    req.file?.filename && deleteFile(req.file.filename);
     res.status(500).send(error.message);
   }
 };
 
 const updatePost = async (req: Request, res: Response) => {
-  const postId: string = req.params.postId;
-  const updatedPostContent: Post = req.body;
-
   try {
-    const result = await PostModel.updateOne(
+    await uploadFile(req, res);
+    const postId: string = req.params.postId;
+
+    const updatedPostContent: Post = JSON.parse(req.body.updatedPostContent);
+    updatedPostContent.photoSrc = req.file.filename;
+
+    const oldPostPhoto = (await PostModel.findById(postId)).photoSrc;
+    const newPost = await PostModel.findOneAndUpdate(
       { _id: postId },
-      updatedPostContent
+      updatedPostContent,
+      { new: true }
     ).populate("owner");
-    if (result.modifiedCount > 0) {
-      res.status(201).send();
+
+    if (newPost) {
+      oldPostPhoto && deleteFile(oldPostPhoto);
+      res.status(201).send(newPost);
     } else {
+      req.file?.filename && deleteFile(req.file.filename);
       res.status(404).send("Cannot find specified post");
     }
   } catch (error) {
+    req.file?.filename && deleteFile(req.file.filename);
     res.status(500).send(error.message);
   }
 };

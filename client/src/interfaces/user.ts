@@ -4,12 +4,10 @@ export interface User {
   password: string;
   email: string;
   tokens?: string[];
-  photoSrc?: string;
+  photo?: string;
 }
 
 export interface UpdateUser {
-  _id: string;
-  username: string;
-  photoSrc?: string;
-  email: string;
+  username?: string;
+  photo?: File | null;
 }
