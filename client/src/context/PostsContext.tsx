@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { createContext, useContext, useState } from "react";
 import { getPosts } from "../services/posts";
 import { Post } from "../interfaces/post";
+import { useUserContext } from "./UserContext";
 
 type PostsContextType = {
   posts: Post[];
@@ -15,6 +16,8 @@ const PostsContext = createContext<PostsContextType>(null);
 export const usePostsContext = () => useContext(PostsContext);
 
 export const PostsContextProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useUserContext() ?? {};
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,6 +31,10 @@ export const PostsContextProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchPosts();
+  }, [user]);
 
   return (
     <PostsContext.Provider

@@ -8,7 +8,7 @@ type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
   loadingUser: boolean;
-  refetchUser: () => {};
+  refetchUser: () => Promise<void>;
 } | null;
 
 const UserContext = createContext<UserContextType>(null);

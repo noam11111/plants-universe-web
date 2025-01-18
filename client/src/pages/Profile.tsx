@@ -1,48 +1,56 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import PostComponent from "../components/Post";
-import UserProfile from "../components/UserProfile";
-import { Post } from "../interfaces/post";
-import { usePostsContext } from "../context/PostsContext";
 import { updateUser } from "../services/users";
+import UserProfile from "../components/UserProfile";
+import { usePostsContext } from "../context/PostsContext";
 import { useUserContext } from "../context/UserContext";
+import { enqueueSnackbar } from "notistack";
+
+const postsPerPage = 2;
 
 const Profile = () => {
-  const { posts, setPosts } = usePostsContext();
+  const { posts } = usePostsContext() ?? {};
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 2;
-  const { user, refetchUser } = useUserContext() ?? {};
+  const { user, setUser } = useUserContext() ?? {};
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const filteredPosts: Post[] = posts.filter(
-    (post) => post.owner._id === user?._id
+  const filteredPosts = useMemo(
+    () => posts?.filter((post) => post.owner._id === user?._id),
+    [posts, user?._id]
   );
-  useEffect(() => {
-    setPosts(
-      filteredPosts.slice(
+
+  const paginatedPosts = useMemo(
+    () =>
+      filteredPosts?.slice(
         (currentPage - 1) * postsPerPage,
         currentPage * postsPerPage
-      )
-    );
-  }, [currentPage]);
+      ),
+    [currentPage, filteredPosts]
+  );
 
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const totalPages = useMemo(
+    () => Math.ceil((filteredPosts?.length ?? 0) / postsPerPage),
+    [filteredPosts]
+  );
 
   const handleSaveProfile = async (
     updatedUsername: string,
-    updatedProfilePhoto: string | null
+    updatedProfilePhoto: File | null
   ) => {
-    //TODO still have a problem with the refresh
-    if (user) {
-      await updateUser({
-        email: user.email,
-        _id: user._id!,
+    try {
+      const updatedData = {
         username: updatedUsername,
-        photoSrc: updatedProfilePhoto || user?.photoSrc,
-      });
-      refetchUser && refetchUser();
+        ...(updatedProfilePhoto && { photo: updatedProfilePhoto }),
+      };
+      setUser?.(await updateUser(user!._id, updatedData));
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("error updating user - ", error.message);
+        enqueueSnackbar(error.message, { variant: "error" });
+      }
     }
   };
   return (
@@ -51,13 +59,10 @@ const Profile = () => {
         <div className="row">
           <div className="mt-4 d-flex flex-column justify-content-center col-6">
             {/* Posts Section */}
-            <div
-              className="row flex-grow-1"
-              style={{ minHeight: "300px", height: "600px" }}
-            >
-              {posts.length > 0 ? (
-                posts.map((post, index) => (
-                  <div className="col-12 mb-3" key={index}>
+            <div className="row flex-grow-1" style={{ minHeight: "300px" }}>
+              {paginatedPosts?.length ? (
+                paginatedPosts.map((post) => (
+                  <div className="col-12 mb-3" key={post._id}>
                     <PostComponent
                       enableChanges={true}
                       key={post._id}
@@ -102,7 +107,7 @@ const Profile = () => {
               <UserProfile
                 username={user.username}
                 email={user.email}
-                profilePhoto={user.photoSrc || null}
+                profilePhoto={user.photo || null}
                 onSaveProfile={handleSaveProfile}
               />
             </div>

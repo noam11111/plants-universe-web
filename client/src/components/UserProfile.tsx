@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import DropzoneComponent from "./Dropzone";
+import { useEffect, useState } from "react";
+import { IMAGES_URL } from "../constants/files";
 
 interface UserProfileProps {
   username: string;
@@ -8,7 +9,7 @@ interface UserProfileProps {
   profilePhoto: string | null;
   onSaveProfile: (
     updatedUsername: string,
-    updatedProfilePhoto: string | null
+    updatedProfilePhoto: File | null
   ) => void;
 }
 
@@ -22,12 +23,15 @@ const UserProfile = ({
   const [newUsername, setNewUsername] = useState(username);
   const [newProfilePhoto, setNewProfilePhoto] = useState<File | null>(null);
 
-  const handleSave = () => {
-    onSaveProfile(
-      newUsername,
-      newProfilePhoto ? URL.createObjectURL(newProfilePhoto) : profilePhoto
-    );
+  useEffect(() => {
+    setNewUsername(username);
+  }, [username]);
+
+  const handleSave = async () => {
+    await onSaveProfile(newUsername, newProfilePhoto);
     setEditMode(false);
+    setNewProfilePhoto(null);
+    setNewUsername(username);
   };
 
   return (
@@ -67,8 +71,9 @@ const UserProfile = ({
             <div className="mb-3">
               <DropzoneComponent
                 onFileSelect={(file) => setNewProfilePhoto(file)}
-                selectedFile={null}
+                selectedFile={newProfilePhoto}
               />
+              <img src="" />
             </div>
 
             <button className="btn btn-success" onClick={handleSave}>
@@ -85,7 +90,9 @@ const UserProfile = ({
             </p>
             <div className="mb-3">
               <img
-                src={profilePhoto || "/temp-user.png"}
+                src={
+                  profilePhoto ? IMAGES_URL + profilePhoto : "/temp-user.png"
+                }
                 alt="Profile"
                 className="rounded-circle"
                 style={{ width: "80px", height: "80px" }}

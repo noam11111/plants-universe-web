@@ -1,13 +1,13 @@
 import { useState } from "react";
-import DropzoneComponent from "./Dropzone";
-import { Post } from "../interfaces/post";
 import PostActions from "./PostActions";
+import { Post } from "../interfaces/post";
+import DropzoneComponent from "./Dropzone";
+import { IMAGES_URL } from "../constants/files";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import { createComment } from "../services/comment";
 import { useUserContext } from "../context/UserContext";
-import { deletePostById, updatePost } from "../services/posts";
 import { usePostsContext } from "../context/PostsContext";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import { IMAGES_URL } from "../constants/files";
+import { deletePostById, updatePost } from "../services/posts";
 
 interface PostProps {
   post: Post;
@@ -22,7 +22,8 @@ const PostComponent = ({
 }: PostProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState(post.content);
-  const [postPhoto, setPostPhoto] = useState(post.photoSrc);
+  const [editedPhoto, setEditedPhoto] = useState<File | null>();
+  const [editedPhotoURL, setEditedPhotoURL] = useState<string | null>();
   const { user } = useUserContext() ?? {};
   const { setPosts, posts } = usePostsContext() ?? {};
 
@@ -32,13 +33,8 @@ const PostComponent = ({
       : false;
   };
   const onEditSave = () => {
-    // setPosts(
-    //   posts.map((currPost) =>
-    //     currPost._id === post._id ? { editMode: true, ...post } : post
-    //   )
-    // );
-
-    updatePost({ ...post, content: description });
+    updatePost(post._id, { photo: editedPhoto, content: description });
+    setEditedPhotoURL(editedPhoto ? URL.createObjectURL(editedPhoto) : null);
   };
   const deletePost = () => {
     deletePostById(post._id);
@@ -60,7 +56,7 @@ const PostComponent = ({
           likedBy: newLikedBy,
         };
         updatePostInState(newPost);
-        updatePost(newPost);
+        updatePost(post._id, { likedBy: newLikedBy });
       }
     } catch (error) {
       console.error(error);
@@ -132,12 +128,15 @@ const PostComponent = ({
         </div>
       )}
 
-      <div className="card-body d-flex justify-content-center row" style={{ padding: "1rem" }}>
+      <div
+        className="card-body d-flex justify-content-center row"
+        style={{ padding: "1rem" }}
+      >
         <div className="d-flex align-items-center mb-1">
           <img
             src={
-              IMAGES_URL + post.owner.photoSrc
-                ? post.owner.photoSrc
+              post.owner.photo
+                ? IMAGES_URL + post.owner.photo
                 : "/temp-user.png"
             }
             alt={post.owner.username}
@@ -157,7 +156,7 @@ const PostComponent = ({
               style={{ height: "40px", resize: "none" }} // Set height to fit
             />
             <DropzoneComponent
-              onFileSelect={(file) => setPostPhoto(URL.createObjectURL(file!))}
+              onFileSelect={(file) => setEditedPhoto(file)}
               selectedFile={null}
             />
             <button className="btn btn-success mt-1" onClick={handleSave}>
@@ -167,7 +166,7 @@ const PostComponent = ({
         ) : (
           <>
             <img
-              src={IMAGES_URL + postPhoto}
+              src={editedPhotoURL ? editedPhotoURL : IMAGES_URL + post.photoSrc}
               alt="Post"
               className="img-fluid mb-1"
             />

@@ -15,3 +15,9 @@ export interface CreatePost {
   content: string;
   photo?: File | null;
 }
+
+export interface UpdatePost {
+  content?: string;
+  photo?: File | null;
+  likedBy?: User[];
+}

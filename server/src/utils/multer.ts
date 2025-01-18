@@ -1,7 +1,8 @@
 import path from "path";
+import * as fs from "fs";
 import multer from "multer";
-import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
+import { Request, Response } from "express";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -23,5 +24,14 @@ export const uploadFile = (req: Request, res: Response): Promise<void> => {
         resolve();
       }
     });
+  });
+};
+
+export const deleteFile = (filename) => {
+  const filePath = `public/images/${filename}`;
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(err);
+    }
   });
 };
