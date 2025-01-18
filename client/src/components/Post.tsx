@@ -2,9 +2,9 @@ import { useState } from "react";
 import PostActions from "./PostActions";
 import { Post } from "../interfaces/post";
 import DropzoneComponent from "./Dropzone";
+import { useNavigate } from "react-router-dom";
 import { IMAGES_URL } from "../constants/files";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { createComment } from "../services/comment";
 import { useUserContext } from "../context/UserContext";
 import { usePostsContext } from "../context/PostsContext";
 import { deletePostById, updatePost } from "../services/posts";
@@ -26,6 +26,7 @@ const PostComponent = ({
   const [editedPhotoURL, setEditedPhotoURL] = useState<string | null>();
   const { user } = useUserContext() ?? {};
   const { setPosts, posts } = usePostsContext() ?? {};
+  const navigate = useNavigate();
 
   const isLikedByCurrUser = (): boolean => {
     return post.likedBy.find((currUser) => currUser?._id === user?._id)
@@ -36,7 +37,7 @@ const PostComponent = ({
     updatePost(post._id, { photo: editedPhoto, content: description });
     setEditedPhotoURL(editedPhoto ? URL.createObjectURL(editedPhoto) : null);
   };
-  
+
   const deletePost = () => {
     deletePostById(post._id);
     setPosts?.(
@@ -66,17 +67,6 @@ const PostComponent = ({
     } catch (error) {
       console.error(error);
       setPosts?.(prevPosts ?? []);
-    }
-  };
-
-  const onCommentAdd = (commentContent: string) => {
-    if (user) {
-      const newPost: Post = {
-        ...post,
-        comments: [{ content: commentContent, user }, ...post.comments],
-      };
-      updatePostInState(newPost);
-      createComment(post._id, { content: commentContent, user: user });
     }
   };
 
@@ -164,30 +154,41 @@ const PostComponent = ({
             />
             <DropzoneComponent
               onFileSelect={(file) => setEditedPhoto(file)}
-              selectedFile={null}
+              selectedFile={editedPhoto ?? null}
+              
             />
             <button className="btn btn-success mt-1" onClick={handleSave}>
               Save
             </button>
           </div>
         ) : (
-          <>
+          <div
+            onClick={() => {
+              if (window.location.pathname === "/") {
+                navigate(`/post/${post._id}`);
+              }
+            }}
+            style={{
+              cursor: window.location.pathname === "/" ? "pointer" : "default",
+            }}
+            className="hover-shadow"
+          >
             <img
               src={editedPhotoURL ? editedPhotoURL : IMAGES_URL + post.photoSrc}
               alt="Post"
               className="img-fluid mb-1"
             />
             <p className="text-center">{description}</p>
-          </>
+          </div>
         )}
 
         {enablePostActions && (
           <PostActions
+            postId={post._id}
             comments={post.comments}
             likesNumber={post.likedBy.length}
             likedByUser={isLikedByCurrUser()}
             key={post._id}
-            onCommentAdd={onCommentAdd}
             onLikeToggle={onLikeToggle}
           ></PostActions>
         )}
