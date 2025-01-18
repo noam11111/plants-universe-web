@@ -87,8 +87,10 @@ const deletePostById = async (req: Request, res: Response) => {
   const postId = req.params.postId;
 
   try {
-    const post = await PostModel.deleteOne({ _id: postId });
-    if (post.deletedCount > 0) {
+    const post = await PostModel.findByIdAndDelete(postId);
+
+    if (post) {
+      post.photoSrc && deleteFile(post.photoSrc);
       res.status(200).send("The post deleted");
     } else {
       res.status(404).send("Post not found");

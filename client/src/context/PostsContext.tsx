@@ -1,12 +1,12 @@
-import { ReactNode, useEffect } from "react";
-import { createContext, useContext, useState } from "react";
-import { getPosts } from "../services/posts";
 import { Post } from "../interfaces/post";
+import { getPosts } from "../services/posts";
+import { ReactNode, useEffect } from "react";
 import { useUserContext } from "./UserContext";
+import { createContext, useContext, useState } from "react";
 
 type PostsContextType = {
   posts: Post[];
-  setPosts: (posts: Post[]) => void;
+  setPosts: React.Dispatch<React.SetStateAction<Post[]>>;
   isLoading: boolean;
   fetchPosts: () => Promise<void>;
 } | null;
