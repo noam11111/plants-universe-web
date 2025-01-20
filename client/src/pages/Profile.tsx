@@ -64,9 +64,10 @@ const Profile = () => {
                 paginatedPosts.map((post) => (
                   <div className="col-12 mb-3" key={post._id}>
                     <PostComponent
-                      enableChanges={true}
                       key={post._id}
+                      inFeed
                       post={post}
+                      enableChanges
                     />
                   </div>
                 ))

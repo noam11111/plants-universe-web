@@ -34,7 +34,7 @@ const DropzoneComponent = ({
       >
         <input {...getInputProps()} />
         {selectedFile ? (
-          <p>{selectedFile.name}</p>
+          <img className="img-fluid" src={URL.createObjectURL(selectedFile)} />
         ) : (
           <div className="text-center">
             <FiUpload size={20} color="#007bff" />

@@ -15,7 +15,7 @@ export const register = async (req: Request, res: Response) => {
     await uploadFile(req, res);
 
     const user: User = JSON.parse(req.body.user);
-    user.photo = req.file.filename;
+    user.photo = req.file?.filename;
 
     const usernameExistsCheck = await UserModel.findOne({
       username: user.username,

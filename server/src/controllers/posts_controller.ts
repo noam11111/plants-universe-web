@@ -2,6 +2,7 @@ import { Post } from "../dtos/post";
 import { Request, Response } from "express";
 import { deleteFile, uploadFile } from "../utils/multer";
 import { PostModel } from "../models/posts_model";
+import { CommentModel } from "../models/comments_model";
 
 const getAllPosts = async (req: Request, res: Response) => {
   try {
@@ -45,7 +46,7 @@ const createPost = async (req: Request, res: Response) => {
   try {
     await uploadFile(req, res);
     const post: Post = JSON.parse(req.body.post);
-    post.photoSrc = req.file.filename;
+    post.photoSrc = req.file?.filename;
     await PostModel.create(post);
 
     res.status(201).send();
@@ -93,6 +94,7 @@ const deletePostById = async (req: Request, res: Response) => {
 
   try {
     const post = await PostModel.findByIdAndDelete(postId);
+    await CommentModel.deleteMany({ _id: { $in: post?.comments } });
 
     if (post) {
       post.photoSrc && deleteFile(post.photoSrc);

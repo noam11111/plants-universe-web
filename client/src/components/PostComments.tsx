@@ -26,8 +26,9 @@ const PostComments = ({ comments, onCommentAdd }: PostCommentsProps) => {
               <div className="d-flex align-items-center mb-1">
                 <img
                   src={
-                    IMAGES_URL +
-                    (comment.user.photo ? comment.user.photo : "/temp-user.png")
+                    comment.user.photo
+                      ? IMAGES_URL + comment.user.photo
+                      : "/temp-user.png"
                   }
                   alt={comment.user.username}
                   className="rounded-circle user-photo my-1 mx-2"
