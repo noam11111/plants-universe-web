@@ -12,14 +12,10 @@ import { deletePostById, updatePost } from "../services/posts";
 interface PostProps {
   post: Post;
   enableChanges?: boolean;
-  enablePostActions?: boolean;
+  inFeed?: boolean;
 }
 
-const PostComponent = ({
-  post,
-  enableChanges,
-  enablePostActions,
-}: PostProps) => {
+const PostComponent = ({ post, enableChanges, inFeed }: PostProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [description, setDescription] = useState(post.content);
   const [editedPhoto, setEditedPhoto] = useState<File | null>();
@@ -88,7 +84,7 @@ const PostComponent = ({
     <div
       className="post card mb-3"
       style={{
-        width: "350px",
+        width: "325px",
         position: "relative",
         overflow: "hidden",
       }}
@@ -155,7 +151,6 @@ const PostComponent = ({
             <DropzoneComponent
               onFileSelect={(file) => setEditedPhoto(file)}
               selectedFile={editedPhoto ?? null}
-              
             />
             <button className="btn btn-success mt-1" onClick={handleSave}>
               Save
@@ -163,14 +158,12 @@ const PostComponent = ({
           </div>
         ) : (
           <div
-            onClick={() => {
-              if (window.location.pathname === "/") {
-                navigate(`/post/${post._id}`);
-              }
-            }}
-            style={{
-              cursor: window.location.pathname === "/" ? "pointer" : "default",
-            }}
+            {...(inFeed
+              ? {
+                  onClick: () => navigate(`/post/${post._id}`),
+                  style: { cursor: "pointer" },
+                }
+              : {})}
             className="hover-shadow"
           >
             <img
@@ -182,16 +175,15 @@ const PostComponent = ({
           </div>
         )}
 
-        {enablePostActions && (
-          <PostActions
-            postId={post._id}
-            comments={post.comments}
-            likesNumber={post.likedBy.length}
-            likedByUser={isLikedByCurrUser()}
-            key={post._id}
-            onLikeToggle={onLikeToggle}
-          ></PostActions>
-        )}
+        <PostActions
+          postId={post._id}
+          comments={post.comments}
+          likesNumber={post.likedBy.length}
+          likedByUser={isLikedByCurrUser()}
+          key={post._id}
+          onLikeToggle={onLikeToggle}
+          inFeed={inFeed}
+        ></PostActions>
       </div>
     </div>
   );

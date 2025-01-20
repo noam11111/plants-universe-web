@@ -7,7 +7,7 @@ import { useUserContext } from "../context/UserContext";
 import { usePostsContext } from "../context/PostsContext";
 
 const PostDetails = () => {
-  const { setPosts, posts } = usePostsContext() ?? {};
+  const { setPosts, posts, isLoading } = usePostsContext() ?? {};
   const { user } = useUserContext() ?? {};
   const { id } = useParams();
 
@@ -30,13 +30,29 @@ const PostDetails = () => {
     );
   };
 
-  return post ? (
+  return isLoading ? (
+    <div
+      className="spinner-border text-success"
+      style={{ width: "15rem", height: "15rem" }}
+    />
+  ) : post ? (
     <div className="my-5">
+      <button
+        type="button"
+        className="btn btn-light px-4 py-2"
+        onClick={() => window.history.back()}
+        style={{
+          position: "absolute",
+          left: "10vw",
+        }}
+      >
+        <i className="bi bi-arrow-left"></i> Back
+      </button>
       <div
         className="card p-4"
         style={{ width: "400px", borderRadius: "12px" }}
       >
-        <PostComponent post={post} enablePostActions={true}></PostComponent>
+        <PostComponent post={post}></PostComponent>
         <PostComments
           onCommentAdd={onCommentAdd}
           comments={post.comments}

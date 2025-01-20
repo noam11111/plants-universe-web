@@ -36,7 +36,7 @@ const Home = () => {
               className="col-6 mb-3  d-flex justify-content-center"
               key={post._id}
             >
-              <PostComponent post={post} enablePostActions={true} />
+              <PostComponent post={post} inFeed />
             </div>
           ))
         ) : (
@@ -47,7 +47,7 @@ const Home = () => {
       </div>
 
       {/* Pagination Section */}
-      <div className="row">
+      <div className="row mb-3">
         <div className="col-12 text-center">
           {totalPages > 0 ? (
             [...Array(totalPages).keys()].map((num) => (

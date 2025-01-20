@@ -8,15 +8,17 @@ interface PostActionsProps {
   likedByUser: boolean;
   comments: PostComment[];
   onLikeToggle: () => void;
+  inFeed?: boolean;
 }
 
-const PostActions: React.FC<PostActionsProps> = ({
+const PostActions = ({
   postId,
   likesNumber,
   likedByUser,
   comments,
   onLikeToggle,
-}) => {
+  inFeed,
+}: PostActionsProps) => {
   const navigate = useNavigate();
 
   return (
@@ -34,19 +36,16 @@ const PostActions: React.FC<PostActionsProps> = ({
         <span className="ml-1">{likesNumber} Likes</span>
       </div>
 
-      <div
-        className="mb-1"
-        style={{
-          cursor: window.location.pathname === "/" ? "pointer" : "default",
-        }}
-        onClick={() => {
-          if (window.location.pathname === "/") {
-            navigate(`/post/${postId}`);
-          }
-        }}
-      >
+      {inFeed ? (
+        <button
+          className={"mb-1 btn btn-light"}
+          onClick={() => navigate(`/post/${postId}`)}
+        >
+          <span>{comments.length} Comments</span>
+        </button>
+      ) : (
         <span>{comments.length} Comments</span>
-      </div>
+      )}
     </div>
   );
 };

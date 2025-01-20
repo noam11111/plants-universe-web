@@ -37,7 +37,7 @@ const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
       }
     } catch (err) {
       console.error("error login user", err);
-      setServerError("Failed to signup user, please try again.");
+      setServerError("Failed to signin user, please try again.");
     }
   };
   return (
