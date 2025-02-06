@@ -43,7 +43,6 @@ const SignUp = () => {
           <p className="text-muted">Sign Up Page</p>
         </div>
         <SignUpForm formData={formData} onInputChange={handleInputChange} />
-        <SocialSignUp />
         <p className="text-center mt-1">
           Already have an account?{" "}
           <a href="/" className="text-success">
