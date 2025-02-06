@@ -9,6 +9,12 @@ import { ACCEPTED_IMAGE_TYPES } from "../constants/files";
 import { isEmpty } from "lodash";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
+import axios from "axios";
+import axiosRetry from 'axios-retry';
+
+
+const instance = axios.create();
+axiosRetry(instance, { retries: 0 });
 
 const formSchema = z.object({
   content: z.string().min(1, "Description is required"),
@@ -53,17 +59,55 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
     }
   };
 
+  const improveTextWithAI = async () => {
+    try {
+      const response = await axios.post(
+        "https://api.openai.com/v1/completions",
+        {
+          model: "gpt-3.5-turbo",
+          prompt: `Improve the following text: "${formData.content}"`,
+          max_tokens: 100,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+          },
+        }
+      );
+
+      const improvedText = response.data.choices[0].text.trim();
+      onInputChange("content", improvedText);
+    } catch (error) {
+      console.error("Error improving text:", error);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mb-3">
-        <input
+      <div className="mb-3 position-relative">
+        <textarea
           {...register("content")}
-          type="text"
           className="form-control"
           placeholder="Enter content"
           value={formData.content}
           onChange={(e) => onInputChange("content", e.target.value)}
+          rows={6}
+          style={{ paddingBottom: "40px" }}
         />
+        <button
+          type="button"
+          className="btn btn-sm position-absolute"
+          style={{
+            bottom: "10px",
+            left: "10px",
+            backgroundColor: "#90EE90",
+            color: "black",
+          }}
+          onClick={improveTextWithAI}
+        >
+          Improve with AI
+        </button>
         {errors.content && (
           <p className="text-danger">{errors.content.message}</p>
         )}
