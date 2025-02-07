@@ -1,8 +1,11 @@
 import appPromise from "../app";
 import mongoose from "mongoose";
 import request from "supertest";
+import FormData from "form-data";
+import { UserModel } from "../models/user_model";
 import { PostModel } from "../models/posts_model";
-import { convertUserToJwtInfo, generateAccessToken } from "../utils/auth/generate_access_token";
+import { convertUserToJwtInfo } from "../utils/auth/auth";
+import { generateAccessToken } from "../utils/auth/generate_access_token";
 import {
   afterEach,
   afterAll,
@@ -11,7 +14,6 @@ import {
   expect,
   test,
 } from "@jest/globals";
-import { UserModel } from "../models/user_model";
 
 const authUser = {
   _id: new mongoose.Types.ObjectId().toString(),
@@ -20,13 +22,16 @@ const authUser = {
   email: "auth@auth.auth",
 };
 
-const post = { title: "title", owner: authUser._id, content: "content" };
+const post = { owner: authUser._id, content: "content" };
 
 const posts = [{ ...post }, { ...post }];
 
 const headers = { authorization: "" };
 
 beforeAll(async () => {
+  await UserModel.deleteMany({ email: authUser.email });
+  await PostModel.deleteMany({ owner: post.owner });
+
   await appPromise;
   const a = await UserModel.create(authUser);
   headers.authorization =
@@ -65,28 +70,28 @@ describe("Posts", () => {
       .get("/posts/" + id)
       .set(headers);
     expect(res.statusCode).toEqual(200);
-    const { title, owner, content } = res.body;
-    expect({ title, owner: owner._id, content }).toEqual(post);
+    const { owner, content } = res.body;
+    expect({ owner: owner._id, content }).toEqual(post);
   });
 
   test("Create Post", async () => {
+    const form = new FormData();
+    form.append("post", JSON.stringify(post));
+
     const res = await request(await appPromise, { headers })
       .post("/posts/")
       .set(headers)
-      .send(post);
+      .set(
+        "Content-Type",
+        `multipart/form-data; boundary=${form.getBoundary()}`
+      )
+      .send(form.getBuffer());
     expect(res.statusCode).toEqual(201);
-    const { title, owner, content } = res.body;
-    expect({ title, owner: owner.toString(), content }).toEqual(post);
 
-    const {
-      title: titleDB,
-      owner: ownerDB,
-      content: contentDB,
-    } = await PostModel.findOne({
+    const { owner: ownerDB, content: contentDB } = await PostModel.findOne({
       owner: post.owner,
     });
     expect({
-      title: titleDB,
       owner: ownerDB._id.toString(),
       content: contentDB,
     }).toEqual(post);
@@ -96,18 +101,34 @@ describe("Posts", () => {
     await PostModel.create(post);
     const id = (await PostModel.findOne({ owner: post.owner }))._id;
 
+    const form = new FormData();
+    form.append("updatedPostContent", JSON.stringify({ ...post, content: "content2" }));
+
     const res = await request(await appPromise, { headers })
       .put("/posts/" + id)
       .set(headers)
-      .send({ title: "title2" });
+      .set("Content-Type", `multipart/form-data; boundary=${form.getBoundary()}`)
+      .send(form.getBuffer());
     expect(res.statusCode).toEqual(201);
-    const { title, owner, content } = await PostModel.findOne({
-      title: "title2",
+    const { owner, content } = await PostModel.findOne({
+      content: "content2",
     });
-    expect({ title, owner: owner.toString(), content }).toEqual({
-      title: "title2",
+    expect({ owner: owner._id.toString(), content }).toEqual({
       owner: post.owner,
-      content: post.content,
+      content: "content2",
     });
+  });
+
+  test("Delete Post", async () => {
+    await PostModel.create(post);
+    const id = (await PostModel.findOne({ owner: post.owner }))._id;
+
+    const res = await request(await appPromise)
+      .delete("/posts/" + id)
+      .set(headers);
+    expect(res.statusCode).toEqual(200);
+
+    const deletedPost = await PostModel.findById(id);
+    expect(deletedPost).toBeNull();
   });
 });

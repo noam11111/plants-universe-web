@@ -1,9 +1,7 @@
-
-
 import appPromise from "../app";
 import mongoose from "mongoose";
 import request from "supertest";
-import { convertUserToJwtInfo, generateAccessToken } from "../utils/auth/generate_access_token";
+import { generateAccessToken } from "../utils/auth/generate_access_token";
 import {
   afterEach,
   afterAll,
@@ -15,7 +13,7 @@ import {
 import { UserModel } from "../models/user_model";
 import { PostModel } from "../models/posts_model";
 import { CommentModel } from "../models/comments_model";
-
+import { convertUserToJwtInfo } from "../utils/auth/auth";
 
 const user = {
   _id: new mongoose.Types.ObjectId().toString(),
@@ -26,15 +24,14 @@ const user = {
 
 const post = {
   _id: new mongoose.Types.ObjectId().toString(),
-  title: "title",
   owner: user._id,
-  content: "content"
+  photoSrc: "photoSrc",
+  content: "content",
 };
 
 const comment = {
   user: user._id,
-  post: post._id,
-  content: "content"
+  content: "content",
 };
 
 const headers = { authorization: "" };
@@ -68,9 +65,9 @@ afterEach(async () => {
 describe("Comments", () => {
   test("Get All Comments", async () => {
     await CommentModel.create(comment);
-    
+
     const res = await request(await appPromise)
-      .get('/comments')
+      .get("/comments")
       .set(headers);
 
     expect(res.statusCode).toEqual(200);
@@ -78,7 +75,7 @@ describe("Comments", () => {
 
   test("Get All Comments By User", async () => {
     await CommentModel.create(comment);
-    
+
     const res = await request(await appPromise)
       .get(`/comments?user=${user._id}`)
       .set(headers);
@@ -95,39 +92,33 @@ describe("Comments", () => {
 
     expect(res.statusCode).toEqual(200);
 
-    const { post, user, content } = res.body;
-    expect({ post: post._id, user, content }).toEqual(comment);
-  });
-
-  test("Get Comment by Post ID", async () => {
-    await CommentModel.create(comment);
-    
-    const res = await request(await appPromise, { headers })
-      .get(`/comments/post/${comment.post}`)
-      .set(headers);
-
-    expect(res.statusCode).toEqual(200);
+    const { user, content } = res.body;
+    expect({ user: user._id, content }).toEqual(comment);
   });
 
   test("Create Comment", async () => {
     const res = await request(await appPromise, { headers })
       .post("/comments/")
       .set(headers)
-      .send(comment);
+      .send({ comment, postId: post._id });
 
     expect(res.statusCode).toEqual(201);
 
-    const { post, user, content } = res.body;
-    expect({ post, user, content }).toEqual(comment);
+    const { user, content } = res.body;
+    expect({ user, content }).toEqual(comment);
 
-    const { post: postDB, user: ownerDB, content: contentDB} = await CommentModel.findOne({user: comment.user});
-    expect({ post: postDB._id.toString(), user: ownerDB._id.toString(), content: contentDB }).toEqual(comment);
+    const { user: ownerDB, content: contentDB } = await CommentModel.findOne({
+      user: comment.user,
+    });
+    expect({
+      user: ownerDB._id.toString(),
+      content: contentDB,
+    }).toEqual(comment);
   });
-
 
   test("Update Comment", async () => {
     const commentId = (await CommentModel.create(comment))._id;
-    
+
     const res = await request(await appPromise, { headers })
       .put(`/comments/${commentId}`)
       .set(headers)
@@ -135,21 +126,25 @@ describe("Comments", () => {
 
     expect(res.statusCode).toEqual(201);
 
-    const { content, user, post } = await CommentModel.findOne({ _id: commentId });
-    expect({ content, user: user._id.toString(), post: post._id.toString() })
-    .toEqual({content: "content2", user: comment.user, post: comment.post});
+    const { content, user } = await CommentModel.findOne({
+      _id: commentId,
+    });
+    expect({
+      content,
+      user: user._id.toString(),
+    }).toEqual({ content: "content2", user: comment.user });
   });
 
   test("Delete Comment", async () => {
     const commentId = (await CommentModel.create(comment))._id;
-    
+
     const res = await request(await appPromise, { headers })
       .delete(`/comments/${commentId}`)
       .set(headers);
 
     expect(res.statusCode).toEqual(200);
 
-    const commentDB = await CommentModel.findOne({_id: commentId});
+    const commentDB = await CommentModel.findOne({ _id: commentId });
     expect(commentDB).toBeNull();
   });
 });
