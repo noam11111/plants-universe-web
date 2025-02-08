@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import request from "supertest";
 import { UserModel } from "../models/user_model";
 import {
-  convertUserToJwtInfo,
   generateAccessToken,
 } from "../utils/auth/generate_access_token";
 import {
@@ -14,6 +13,7 @@ import {
   expect,
   test,
 } from "@jest/globals";
+import { convertUserToJwtInfo } from "../utils/auth/auth";
 
 const authUser = {
   username: "auth",
@@ -29,6 +29,7 @@ const users = [
   },
   {
     ...user,
+    username: "test2",
   },
 ];
 
@@ -58,48 +59,18 @@ afterEach(async () => {
 });
 
 describe("Users", () => {
-  test("Get Many Students", async () => {
-    await UserModel.create(users);
-    const res = await request(await appPromise)
-      .get("/users")
-      .set(headers);
+
+  test("Get Me", async () => {
+    const res = await request(await appPromise, { headers }).get("/users/me").set(headers);
     expect(res.statusCode).toEqual(200);
-  });
-
-  test("Get User by ID", async () => {
-    await UserModel.create(user);
-    const id = (await UserModel.findOne({ email: user.email }))._id;
-    const res = await request(await appPromise, { headers })
-      .get("/users/" + id)
-      .set(headers);
-    expect(res.statusCode).toEqual(200);
-    const { email, password, username } = res.body;
-    expect({ email, password, username }).toEqual(user);
-  });
-
-  test("Create User", async () => {
-    const res = await request(await appPromise, { headers })
-      .post("/users/")
-      .set(headers)
-      .send(user);
-    expect(res.statusCode).toEqual(201);
-    const { email, password, username } = res.body;
-    expect({ email, password, username }).toEqual(user);
-
-    const {
-      email: emailDB,
-      password: passwordDB,
-      username: usernameDB,
-    } = await UserModel.findOne({
-      email: user.email,
+    const { email, username } = res.body;
+    expect({ email, username }).toEqual({
+      email: authUser.email,
+      username: authUser.username,
     });
-    expect({
-      email: emailDB,
-      password: passwordDB,
-      username: usernameDB,
-    }).toEqual(user);
   });
 
+  
   test("Update User", async () => {
     await UserModel.create(user);
     const id = (await UserModel.findOne({ email: user.email }))._id;
@@ -119,17 +90,4 @@ describe("Users", () => {
     });
   });
 
-  test("Delete User", async () => {
-    await UserModel.create(user);
-    const id = (await UserModel.findOne({ email: user.email }))._id;
-
-    const res = await request(await appPromise, { headers })
-      .delete("/users/" + id)
-      .set(headers);
-    expect(res.statusCode).toEqual(201);
-    const deletedUser = await UserModel.findOne({
-      email: user.email,
-    });
-    expect(deletedUser).toBeNull();
-  });
 });

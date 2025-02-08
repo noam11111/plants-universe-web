@@ -2,167 +2,225 @@ export const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Posts API",
+      title: "Plants Universe API",
       version: "1.0.0",
-      description: "API for managing posts",
+      description: "API for managing plants universe",
     },
     components: {
       schemas: {
         User: {
           type: "object",
           properties: {
+            _id: { type: "string" },
             email: { type: "string" },
             password: { type: "string" },
             username: { type: "string" },
+            photo: { type: "string" },
+            tokens: {
+              type: "array",
+              items: { type: "string" },
+            },
           },
           required: ["email", "password", "username"],
         },
         Post: {
           type: "object",
           properties: {
-            title: { type: "string" },
+            _id: { type: "string" },
+            owner: { $ref: "#/components/schemas/User" },
             content: { type: "string" },
-            user: { $ref: "#/components/schemas/User" }, // Referencing User schema
+            photoSrc: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            likedBy: {
+              type: "array",
+              items: { $ref: "#/components/schemas/User" },
+            },
+            comments: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Comment" },
+            },
           },
-          required: ["title", "content", "user"],
+          required: ["owner", "content"],
         },
         Comment: {
           type: "object",
           properties: {
+            _id: { type: "string" },
             content: { type: "string" },
-            user: { $ref: "#/components/schemas/User" }, // Referencing User schema
-            post: { $ref: "#/components/schemas/Post" }, // Referencing Post schema
+            user: { $ref: "#/components/schemas/User" },
           },
-          required: ["content", "user", "post"],
+          required: ["content", "user"],
         },
       },
     },
     paths: {
-      "/users": {
-        get: {
-          summary: "Get all users",
-          responses: {
-            200: {
-              description: "A list of users",
-              tags: ["users"],
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "array",
-                    items: { $ref: "#/components/schemas/User" },
-                  },
-                },
-              },
-            },
-          },
-        },
+      "/auth/login": {
         post: {
-          summary: "Create a new user",
-          tags: ["users"],
+          summary: "Login a user",
+          tags: ["auth"],
           requestBody: {
             required: true,
             content: {
               "application/json": {
-                schema: { $ref: "#/components/schemas/User" },
+                schema: {
+                  type: "object",
+                  properties: {
+                    username: { type: "string" },
+                    password: { type: "string" },
+                  },
+                  required: ["username", "password"],
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "User logged in",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      accessToken: { type: "string" },
+                      refreshToken: { type: "string" },
+                      user: { $ref: "#/components/schemas/User" },
+                    },
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Invalid credentials",
+            },
+          },
+        },
+      },
+      "/auth/register": {
+        post: {
+          summary: "Register a new user",
+          tags: ["auth"],
+          requestBody: {
+            required: true,
+            content: {
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    user: { type: "string" },
+                    file: { type: "string", format: "binary" },
+                  },
+                  required: ["user"],
+                },
               },
             },
           },
           responses: {
             201: {
-              description: "User created",
+              description: "User registered",
               content: {
                 "application/json": {
-                  schema: { $ref: "#/components/schemas/User" },
+                  schema: {
+                    type: "object",
+                    properties: {
+                      accessToken: { type: "string" },
+                      refreshToken: { type: "string" },
+                      user: { $ref: "#/components/schemas/User" },
+                    },
+                  },
                 },
               },
+            },
+            400: {
+              description: "User already exists",
+            },
+            500: {
+              description: "Server error",
             },
           },
         },
       },
-      "/users/{userId}": {
-        get: {
-          summary: "Get user by ID",
-          tags: ["users"],
-          parameters: [
-            {
-              name: "userId",
-              in: "path",
-              required: true,
-              description: "The ID of the user",
-              schema: {
-                type: "string",
-              },
-            },
-          ],
+      "/auth/logout": {
+        post: {
+          summary: "Logout a user",
+          tags: ["auth"],
           responses: {
             200: {
-              description: "User found",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/User" },
-                },
-              },
+              description: "User logged out",
             },
-            404: {
-              description: "User not found",
+            401: {
+              description: "No refresh token provided",
+            },
+            403: {
+              description: "Unauthorized",
             },
           },
         },
-        put: {
-          summary: "Update user by ID",
-          tags: ["users"],
-          parameters: [
-            {
-              name: "userId",
-              in: "path",
-              required: true,
-              description: "The ID of the user",
-              schema: {
-                type: "string",
+      },
+      "/auth/refresh-token": {
+        post: {
+          summary: "Refresh access token",
+          tags: ["auth"],
+          responses: {
+            200: {
+              description: "Token refreshed",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      accessToken: { type: "string" },
+                      refreshToken: { type: "string" },
+                      user: { $ref: "#/components/schemas/User" },
+                    },
+                  },
+                },
               },
             },
-          ],
+            401: {
+              description: "No token provided",
+            },
+            403: {
+              description: "Unauthorized",
+            },
+          },
+        },
+      },
+      "/auth/google-login": {
+        post: {
+          summary: "Login with Google",
+          tags: ["auth"],
           requestBody: {
             required: true,
             content: {
               "application/json": {
-                schema: { $ref: "#/components/schemas/User" },
-              },
-            },
-          },
-          responses: {
-            200: {
-              description: "User updated",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/User" },
+                schema: {
+                  type: "object",
+                  properties: {
+                    credential: { type: "string" },
+                  },
+                  required: ["credential"],
                 },
               },
             },
-            404: {
-              description: "User not found",
-            },
           },
-        },
-        delete: {
-          summary: "Delete user by ID",
-          parameters: [
-            {
-              name: "userId",
-              in: "path",
-              required: true,
-              description: "The ID of the user",
-              schema: {
-                type: "string",
-              },
-            },
-          ],
           responses: {
             200: {
-              description: "User deleted",
+              description: "User logged in with Google",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      accessToken: { type: "string" },
+                      refreshToken: { type: "string" },
+                      user: { $ref: "#/components/schemas/User" },
+                    },
+                  },
+                },
+              },
             },
-            404: {
-              description: "User not found",
+            500: {
+              description: "Failed to sign in with Google",
             },
           },
         },
@@ -191,19 +249,24 @@ export const swaggerOptions = {
           requestBody: {
             required: true,
             content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Post" },
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    post: { type: "string" },
+                    file: { type: "string", format: "binary" },
+                  },
+                  required: ["post"],
+                },
               },
             },
           },
           responses: {
             201: {
               description: "Post created",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Post" },
-                },
-              },
+            },
+            500: {
+              description: "Server error",
             },
           },
         },
@@ -254,19 +317,49 @@ export const swaggerOptions = {
           requestBody: {
             required: true,
             content: {
-              "application/json": {
-                schema: { $ref: "#/components/schemas/Post" },
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    updatedPostContent: { type: "string" },
+                    file: { type: "string", format: "binary" },
+                  },
+                  required: ["updatedPostContent"],
+                },
               },
             },
           },
           responses: {
-            200: {
+            201: {
               description: "Post updated",
               content: {
                 "application/json": {
                   schema: { $ref: "#/components/schemas/Post" },
                 },
               },
+            },
+            404: {
+              description: "Post not found",
+            },
+          },
+        },
+        delete: {
+          summary: "Delete post by ID",
+          tags: ["posts"],
+          parameters: [
+            {
+              name: "postId",
+              in: "path",
+              required: true,
+              description: "The ID of the post",
+              schema: {
+                type: "string",
+              },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Post deleted",
             },
             404: {
               description: "Post not found",
@@ -299,7 +392,14 @@ export const swaggerOptions = {
             required: true,
             content: {
               "application/json": {
-                schema: { $ref: "#/components/schemas/Comment" },
+                schema: {
+                  type: "object",
+                  properties: {
+                    postId: { type: "string" },
+                    comment: { $ref: "#/components/schemas/Comment" },
+                  },
+                  required: ["postId", "comment"],
+                },
               },
             },
           },
@@ -311,6 +411,9 @@ export const swaggerOptions = {
                   schema: { $ref: "#/components/schemas/Comment" },
                 },
               },
+            },
+            500: {
+              description: "Server error",
             },
           },
         },
@@ -367,30 +470,23 @@ export const swaggerOptions = {
             },
           },
           responses: {
-            200: {
+            201: {
               description: "Comment updated",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Comment" },
-                },
-              },
             },
             404: {
               description: "Comment not found",
             },
           },
         },
-      },
-      "/comments/post/{postId}": {
-        get: {
-          summary: "Get comments by post ID",
+        delete: {
+          summary: "Delete comment by ID",
           tags: ["comments"],
           parameters: [
             {
-              name: "postId",
+              name: "commentId",
               in: "path",
               required: true,
-              description: "The ID of the post",
+              description: "The ID of the comment",
               schema: {
                 type: "string",
               },
@@ -398,24 +494,15 @@ export const swaggerOptions = {
           ],
           responses: {
             200: {
-              description: "Comments found",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "array",
-                    items: { $ref: "#/components/schemas/Comment" },
-                  },
-                },
-              },
+              description: "Comment deleted",
             },
             404: {
-              description: "No comments found for the given post",
+              description: "Comment not found",
             },
           },
         },
       },
     },
   },
-  // Path to the API specs
   apis: ["./routes/*.ts"],
 };
