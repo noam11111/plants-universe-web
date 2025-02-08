@@ -9,12 +9,8 @@ import { ACCEPTED_IMAGE_TYPES } from "../constants/files";
 import { isEmpty } from "lodash";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
-import axios from "axios";
-import axiosRetry from 'axios-retry';
-
-
-const instance = axios.create();
-axiosRetry(instance, { retries: 0 });
+import { useState } from "react";
+import { improveTextWithAI } from "../services/AI";
 
 const formSchema = z.object({
   content: z.string().min(1, "Description is required"),
@@ -46,6 +42,7 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
   const navigate = useNavigate();
 
   const { user } = useUserContext() ?? {};
+  const [AIErrors, setAIErrors] = useState<string | null>(null);
 
   const onSubmit = async ({ content, photo }: PostData) => {
     try {
@@ -59,27 +56,16 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
     }
   };
 
-  const improveTextWithAI = async () => {
+  const improveText = async () => {
     try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/completions",
-        {
-          model: "gpt-3.5-turbo",
-          prompt: `Improve the following text: "${formData.content}"`,
-          max_tokens: 100,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          },
-        }
-      );
-
-      const improvedText = response.data.choices[0].text.trim();
+      const improvedText = await improveTextWithAI(formData.content || "");
       onInputChange("content", improvedText);
+      setAIErrors(null);
     } catch (error) {
-      console.error("Error improving text:", error);
+      if (error instanceof Error) {
+        setAIErrors(`Error improving text. ${error.message}`);
+        console.error("Error improving text:", error);
+      }
     }
   };
 
@@ -97,20 +83,21 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
         />
         <button
           type="button"
-          className="btn btn-sm position-absolute"
+          className="btn btn-sm mt-1"
           style={{
             bottom: "10px",
             left: "10px",
             backgroundColor: "#90EE90",
             color: "black",
           }}
-          onClick={improveTextWithAI}
+          onClick={improveText}
         >
           Improve with AI
         </button>
         {errors.content && (
           <p className="text-danger">{errors.content.message}</p>
         )}
+        {AIErrors && <p className="text-danger">{AIErrors}</p>}
       </div>
 
       <div className="mb-3">
