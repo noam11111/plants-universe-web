@@ -1,43 +1,7 @@
-import * as fs from "fs";
 import { User } from "../dtos/user";
 import { Request, Response } from "express";
-import { deleteFile, uploadFile } from "../utils/multer";
 import { UserModel } from "../models/user_model";
-import { createNewUser, findUserById } from "../services/user_service";
-
-const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const users: User[] = await UserModel.find();
-    res.send(users);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
-
-const getUserById = async (req: Request, res: Response) => {
-  const userId: string = req.params.userId;
-
-  try {
-    const user: User = await findUserById(userId);
-    if (user) {
-      res.send(user);
-    } else {
-      res.status(404).send("Cannot find specified user");
-    }
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
-
-const createUser = async (req: Request, res: Response) => {
-  const createdUser: User = req.body;
-  try {
-    const user: User = await createNewUser(createdUser);
-    res.status(201).send(user);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
+import { deleteFile, uploadFile } from "../utils/multer";
 
 const updateUser = async (req: Request, res: Response) => {
   try {
@@ -79,21 +43,6 @@ const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-const deleteUserById = async (req: Request, res: Response) => {
-  const userId: string = req.params.userId;
-
-  try {
-    const result = await UserModel.deleteOne({ _id: userId });
-    if (result.deletedCount > 0) {
-      res.status(201).send();
-    } else {
-      res.status(404).send("Cannot find specified user");
-    }
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-};
-
 const getMe = async (req: Request & { user: User }, res: Response) => {
   try {
     res.send(req.user);
@@ -103,10 +52,6 @@ const getMe = async (req: Request & { user: User }, res: Response) => {
 };
 
 export {
-  getAllUsers,
-  getUserById,
-  createUser,
   updateUser,
-  deleteUserById,
   getMe,
 };

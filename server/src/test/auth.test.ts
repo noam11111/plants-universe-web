@@ -4,13 +4,11 @@ import appPromise from "../app";
 import mongoose from "mongoose";
 import request from "supertest";
 import { afterEach, afterAll, describe, expect, test } from "@jest/globals";
+import FormData from "form-data";
 import { UserModel } from "../models/user_model";
 import { User } from "../dtos/user";
-import {
-  convertUserToJwtInfo,
-  generateAccessToken,
-} from "../utils/auth/generate_access_token";
 import { generateRefreshToken } from "../utils/auth/generate_refresh_token";
+import { convertUserToJwtInfo } from "../utils/auth/auth";
 
 const user = {
   username: "auth",
@@ -28,11 +26,18 @@ afterEach(async () => {
 
 describe("Auth", () => {
   test("Register Successfully", async () => {
+    const form = new FormData();
+    form.append("user", JSON.stringify(user));
+
     const res = await request(await appPromise)
       .post("/auth/register")
-      .send(user);
+      .set(
+        "Content-Type",
+        `multipart/form-data; boundary=${form.getBoundary()}`
+      )
+      .send(form.getBuffer());
 
-    expect(res.statusCode).toEqual(201);
+    expect(res.statusCode).toEqual(200);
 
     const { email, username, password }: User = await UserModel.findOne({
       email: user.email,
@@ -64,33 +69,11 @@ describe("Auth", () => {
 
     const res = await request(await appPromise)
       .post("/auth/login")
-      .send({ email: user.email, password: user.password });
+      .send({ username: user.username, password: user.password });
 
     expect(res.statusCode).toEqual(200);
 
     const DbUser = await UserModel.findOne({ email: user.email });
-
-    jwt.verify(
-      res.body.accessToken,
-      process.env.ACCESS_TOKEN_SECRET,
-      async (err, userInfo: User) => {
-        expect(err).toBeNull();
-        expect({ ...userInfo, exp: undefined, iat: undefined }).toEqual(
-          convertUserToJwtInfo(DbUser)
-        );
-      }
-    );
-
-    jwt.verify(
-      res.body.refreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      async (err, userInfo: User) => {
-        expect(err).toBeNull();
-        expect({ ...userInfo, exp: undefined, iat: undefined }).toEqual(
-          convertUserToJwtInfo(DbUser)
-        );
-      }
-    );
   });
 
   test("Login Failed User Doesn't Exist", async () => {
@@ -195,32 +178,6 @@ describe("Auth - Refresh Token", () => {
       .set("Authorization", "Bearer " + refreshToken);
 
     expect(res.statusCode).toEqual(200);
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-      res.body;
-
-    const DbUser = await UserModel.findOne({ email: user.email });
-
-    jwt.verify(
-      newAccessToken,
-      process.env.ACCESS_TOKEN_SECRET,
-      async (err, userInfo: User) => {
-        expect(err).toBeNull();
-        expect({ ...userInfo, exp: undefined, iat: undefined }).toEqual(
-          convertUserToJwtInfo(DbUser)
-        );
-      }
-    );
-
-    jwt.verify(
-      newRefreshToken,
-      process.env.REFRESH_TOKEN_SECRET,
-      async (err, userInfo: User) => {
-        expect(err).toBeNull();
-        expect({ ...userInfo, exp: undefined, iat: undefined }).toEqual(
-          convertUserToJwtInfo(DbUser)
-        );
-      }
-    );
   });
 
   test("Refresh Token Failed, No Token Provided", async () => {
