@@ -32,22 +32,22 @@ const appPromise: Promise<any> = new Promise((resolve, reject) => {
 
       app.use(bodyParser.json());
       app.use(bodyParser.urlencoded({ extended: true }));
+
+      const AIRouter = require("./routes/AI_route");
+      app.use("/AI", AIRouter);
+
       app.use(authenticateToken);
 
       const authRouter = require("./routes/auth_route");
-
       app.use("/auth", authRouter);
 
       const postsRouter = require("./routes/posts_route");
-
       app.use("/posts", postsRouter);
 
       const commentsRouter = require("./routes/comments_route");
-
       app.use("/comments", commentsRouter);
 
       const usersRouter = require("./routes/users_route");
-
       app.use("/users", usersRouter);
 
       app.use((error, req, res) => {

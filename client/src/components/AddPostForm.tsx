@@ -9,6 +9,8 @@ import { ACCEPTED_IMAGE_TYPES } from "../constants/files";
 import { isEmpty } from "lodash";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
+import { useState } from "react";
+import { improveTextWithAI } from "../services/AI";
 
 const formSchema = z.object({
   content: z.string().min(1, "Description is required"),
@@ -40,6 +42,7 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
   const navigate = useNavigate();
 
   const { user } = useUserContext() ?? {};
+  const [AIErrors, setAIErrors] = useState<string | null>(null);
 
   const onSubmit = async ({ content, photo }: PostData) => {
     try {
@@ -53,20 +56,48 @@ const PostForm = ({ formData, onInputChange }: PostFormProps) => {
     }
   };
 
+  const improveText = async () => {
+    try {
+      const improvedText = await improveTextWithAI(formData.content || "");
+      onInputChange("content", improvedText);
+      setAIErrors(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setAIErrors(`Error improving text. ${error.message}`);
+        console.error("Error improving text:", error);
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mb-3">
-        <input
+      <div className="mb-3 position-relative">
+        <textarea
           {...register("content")}
-          type="text"
           className="form-control"
           placeholder="Enter content"
           value={formData.content}
           onChange={(e) => onInputChange("content", e.target.value)}
+          rows={6}
+          style={{ paddingBottom: "40px" }}
         />
+        <button
+          type="button"
+          className="btn btn-sm mt-1"
+          style={{
+            bottom: "10px",
+            left: "10px",
+            backgroundColor: "#90EE90",
+            color: "black",
+          }}
+          onClick={improveText}
+        >
+          Improve with AI
+        </button>
         {errors.content && (
           <p className="text-danger">{errors.content.message}</p>
         )}
+        {AIErrors && <p className="text-danger">{AIErrors}</p>}
       </div>
 
       <div className="mb-3">
