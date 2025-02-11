@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { enqueueSnackbar } from "notistack";
+import { googleLogin } from "../services/auth";
 import SignUpForm from "../components/SignUpForm";
-import SocialSignUp from "../components/SocialSignUp";
+import { useUserContext } from "../context/UserContext";
+import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
 
 export type SignUpData = {
   username: string;
@@ -10,6 +14,10 @@ export type SignUpData = {
 };
 
 const SignUp = () => {
+  const { setUser } = useUserContext() ?? {};
+  const navigate = useNavigate();
+
+
   const [formData, setFormData] = useState<SignUpData>({
     username: "",
     password: "",
@@ -25,6 +33,21 @@ const SignUp = () => {
       ...formData,
       [field]: value,
     });
+  };
+
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    try {
+      const user = await googleLogin(credentialResponse.credential);
+      setUser?.(user);
+      navigate("/")
+    } catch (err) {
+      console.error("error login user", err);
+      enqueueSnackbar("Failed to login with Google", { variant: "error" });
+    }
+  };
+
+  const googleLoginError = () => {
+    enqueueSnackbar("Failed to login with Google", { variant: "error" });
   };
 
   return (
@@ -43,6 +66,13 @@ const SignUp = () => {
           <p className="text-muted">Sign Up Page</p>
         </div>
         <SignUpForm formData={formData} onInputChange={handleInputChange} />
+        <div className="mt-2 px-5">
+          <GoogleLogin
+            text="signup_with"
+            onSuccess={handleGoogleLogin}
+            onError={googleLoginError}
+          />
+        </div>
         <p className="text-center mt-1">
           Already have an account?{" "}
           <a href="/" className="text-success">

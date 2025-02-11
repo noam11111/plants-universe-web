@@ -25,6 +25,7 @@ const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
     handleSubmit,
     formState: { errors },
     register,
+    setValue,
   } = useForm<SignInData>({ resolver: zodResolver(formSchema) });
 
   const [serverError, setServerError] = useState<string | null>(null);
@@ -49,7 +50,10 @@ const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
           className="form-control"
           placeholder="Username*"
           value={formData.username}
-          onChange={(e) => onInputChange("username", e.target.value)}
+          onChange={(e) => {
+            onInputChange("username", e.target.value);
+            setValue("username", e.target.value);
+          }}
         />
         {errors.username && (
           <p className="text-danger">{errors.username.message}</p>
@@ -62,7 +66,10 @@ const SignInForm = ({ formData, onInputChange }: SignInFormProps) => {
           className="form-control"
           placeholder="Password*"
           value={formData.password}
-          onChange={(e) => onInputChange("password", e.target.value)}
+          onChange={(e) => {
+            onInputChange("password", e.target.value);
+            setValue("password", e.target.value);
+          }}
         />
         {errors.password && (
           <p className="text-danger">{errors.password.message}</p>

@@ -204,6 +204,7 @@ export const signup = async (userData: SignUpData) => {
       err.response?.status === 400 &&
       err.response.data.userExist
     ) {
+      err.message = "User already exists, please login";
       throw new Error(err.message);
     } else {
       throw new Error("Failed to signup user, please try again.");
