@@ -45,13 +45,11 @@ const updateUser = async (req: Request, res: Response) => {
 
 const getMe = async (req: Request & { user: User }, res: Response) => {
   try {
-    res.send(req.user);
+    const user = await UserModel.findById(req.user._id);
+    res.status(200).send(user);
   } catch (error) {
     res.status(500).send(error.message);
   }
 };
 
-export {
-  updateUser,
-  getMe,
-};
+export { updateUser, getMe };
