@@ -17,7 +17,6 @@ const SignUp = () => {
   const { setUser } = useUserContext() ?? {};
   const navigate = useNavigate();
 
-
   const [formData, setFormData] = useState<SignUpData>({
     username: "",
     password: "",
@@ -39,7 +38,7 @@ const SignUp = () => {
     try {
       const user = await googleLogin(credentialResponse.credential);
       setUser?.(user);
-      navigate("/")
+      navigate("/");
     } catch (err) {
       console.error("error login user", err);
       enqueueSnackbar("Failed to login with Google", { variant: "error" });
@@ -57,11 +56,6 @@ const SignUp = () => {
         style={{ width: "400px", borderRadius: "12px" }}
       >
         <div className="text-center mb-2">
-          <img
-            src="/src/assets/logo.png"
-            alt="PlantsUniverse Logo"
-            style={{ width: "60px", height: "60px" }}
-          />
           <h4 className="mt-2">PlantsUniverse</h4>
           <p className="text-muted">Sign Up Page</p>
         </div>
