@@ -49,11 +49,6 @@ const SignIn = () => {
         style={{ width: "400px", borderRadius: "12px" }}
       >
         <div className="text-center mb-2">
-          <img
-            src="/src/assets/logo.png"
-            alt="PlantsUniverse Logo"
-            style={{ width: "60px", height: "60px" }}
-          />
           <h4 className="mt-2">PlantsUniverse</h4>
           <p className="text-muted">Sign In Page</p>
         </div>
